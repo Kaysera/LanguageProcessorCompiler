@@ -40,9 +40,11 @@ class Analex:
   
   ch=leerCaracter
   if ch==" ":
+    pass
        # quitar todos los caracteres blancos 
        #buscar el siguiente componente lexico que sera devuelto )
   elif ch== "+":
+    pass
    # debe crearse un objeto de la clasee OpAdd que sera devuelto
   elif  #asi con todos los simbolos y operadores del lenguaje
    return componentes.CorCi()
