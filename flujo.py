@@ -16,17 +16,17 @@ class Flujo:
 
   #Devuelve un caracter de la cadenma
   def siguiente(self):
-    return self.fic.read(1)
-    # if self.pos< len(self.cad)-1:
-    #   self.pos+= 1
-    #   return self.cad[self.pos]
-    # else:
-    #   return ""
+    # return self.fic.read(1)
+    if self.pos< len(self.fic)-1:
+      self.pos+= 1
+      return self.fic[self.pos]
+    else:
+      return ""
 
   # Revierte un caracter no leido a la cadena de partida
   def devuelve(self, c):
-    self.fic.seek(-1,1)
-    #self.pos-= len(c)
+    #self.fic.seek(-1,1)
+    self.pos-= len(c)
 
   # Indica la posicion leida
   def posleida(self):
@@ -34,7 +34,7 @@ class Flujo:
 
   # Devuelve la cadena en la que estamos leyendo
   def cadena(self):
-    return self.cad
+    return self.fic
 
 import sys
 
@@ -43,7 +43,7 @@ if __name__=="__main__":
   linea= sys.stdin.readline()
   while linea and linea!= "\n":
     f= Flujo(linea)
-    print "Voy a señalar los espacios:"
+    print "Voy a seÃ±alar los espacios:"
     c= f.siguiente()
     while c!= "":
       if c==" ":
@@ -64,7 +64,7 @@ if __name__=="__main__":
       l+= c
     if linea != l:
       print "Error:"
-      print "  leído:", linea
+      print "  leido:", linea
       print "  reconstruido:", l
     else:
       print "BIEN"

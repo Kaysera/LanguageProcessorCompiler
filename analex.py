@@ -23,10 +23,11 @@ class Analex:
  #  Devuelve: --
  #
  ############################################################################
- def __init__(self):
+ def __init__(self, flujo):
     #Debe completarse con  los campos de la clase que se consideren necesarios
 
     self.nlinea=1 #contador de lineas para identificar errores
+    self.flujo = flujo
 
  ############################################################################
  #
@@ -38,37 +39,87 @@ class Analex:
  ############################################################################
  def Analiza(self):
   
-  ch=leerCaracter
+  ch=self.flujo.siguiente()
   if ch==" ":
-    pass
-       # quitar todos los caracteres blancos 
-       #buscar el siguiente componente lexico que sera devuelto )
+    while ch == " ":
+      ch = self.flujo.siguiente()
+    return self.Analiza(self.flujo)
   elif ch== "+":
-    pass
-   # debe crearse un objeto de la clasee OpAdd que sera devuelto
-  elif  #asi con todos los simbolos y operadores del lenguaje
-   return componentes.CorCi()
+    return OpAdd("+", self.nlinea)     
+  elif ch== "-":
+    return componentes.OpAdd("-",self.nlinea)
+  elif ch== "*":
+    return componentes.OpMult("*",self.nlinea)
+  elif ch== "/":
+    return componentes.OpMult("/",self.nlinea)
+  elif ch== "(":
+    return componentes.ParentAp()
+  elif ch== ")":
+    return componentes.ParentCi()
+  elif ch== "[":
+    return componentes.CorAp()
+  elif ch== "]":
+    return componentes.CorCi()
+  elif ch== ".":
+    return componentes.Punto()
+  elif ch== ",":
+    return componentes.Coma()
+  elif ch== ";":
+    return componentes.PtoComa()
+
   elif ch == "{":
-   #Saltar todos los caracteres del comentario 
-   # y encontrar el siguiente componente lexico
+    while ch != "}":
+      ch = self.flujo.siguiente()
+    return self.Analiza()
   elif ch == "}":
-   print "ERROR: Comentario no abierto" # tenemos un comentario no abierto
-   return self.Analiza()
+    print "ERROR: Comentario no abierto" # tenemos un comentario no abierto
+    return self.Analiza()
   elif ch==":":
-    #Comprobar con el siguiente caracter si es una definicion de la declaracion o el operador de asignacion
-  elif  
-    #Completar los operadores y categorias lexicas que faltan
-  elif ch es un caracter
-    #leer entrada hasta que no sea un caracter valido de un identificador
-    #devolver el ultimo caracter a la entrada
-    # Comprobar si es un identificador o PR y devolver el objeto correspondiente
-  elif ch es numero:
-    #Leer todos los elementos que forman el numero 
-    # devolver el ultimo caracter que ya no pertenece al numero a la entrada
-    # Devolver un objeto de la categoria correspondiente 
+    newCh = self.flujo.siguiente()
+    if newCh == "=":
+      return componentes.OpAsigna()
+    else:
+      self.flujo.devolver(newCh)
+      return componentes.DosPtos()
+  elif ch.isalpha():
+    word = []
+    word.append(ch)
+    #Python no se come estos iguales
+    while ((ch = self.flujo.siguiente()).isalnum):
+      word.append(ch)
+    self.flujo.devolver(ch)
+    if word in self.PR:
+      return componentes.PR(word, self.nlinea)
+    else:
+      return componentes.Identif(word, self.nlinea)
+  elif ch.isdigit():
+    num = []
+    num.append(ch)
+    #Python no se come estos iguales
+    while((ch=self.flujo.siguiente()).isdigit()):
+      num.append(ch)
+    if (ch != '.'):
+      self.flujo.devolver(ch)
+      return componentes.Numero(num, self.nlinea, 'INTEGER')
+    else:
+          #Python no se come estos iguales
+
+      if not (newCh = self.flujo.siguiente().isdigit()):
+        self.flujo.devolver(newCh)
+        self.flujo.devolver(ch)
+        print "ERROR: NUMERO REAL MAL ESPECIFICADO" # tenemos un comentario no abierto
+        return self.Analiza()
+      num.append(ch)
+          #Python no se come estos iguales
+
+      while((ch=self.flujo.siguiente()).isdigit()):
+        num.append(ch)
+      self.flujo.devolver(ch)
+      return componentes.Numero(num, self.nlinea, 'FLOAT')
   elif ch== "\n":
-   #incrementa el numero de linea ya que acabamos de saltar a otra
-   # devolver el siguiente componente encontrado
+    self.nlinea += 1
+    self.Analiza()
+    
 
 
 ############################################################################
