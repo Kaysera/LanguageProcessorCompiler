@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import componentes
-import errores
 import flujo
 import string
 import sys
@@ -37,13 +36,14 @@ class Analex:
  #  Devuelve: Devuelve un componente lexico
  #
  ############################################################################
- def Analiza(self):
-  
+ def Analiza(self): 
   ch=self.flujo.siguiente()
+  #print('Caracter: ' + ch)
   if ch==" ":
     while ch == " ":
       ch = self.flujo.siguiente()
-    return self.Analiza(self.flujo)
+    self.flujo.devuelve(ch)
+    return self.Analiza()
   elif ch== "+":
     return OpAdd("+", self.nlinea)     
   elif ch== "-":
@@ -66,9 +66,9 @@ class Analex:
     return componentes.Coma()
   elif ch== ";":
     return componentes.PtoComa()
-
   elif ch == "{":
     while ch != "}":
+      #print('Wiiii\n')
       ch = self.flujo.siguiente()
     return self.Analiza()
   elif ch == "}":
@@ -79,46 +79,76 @@ class Analex:
     if newCh == "=":
       return componentes.OpAsigna()
     else:
-      self.flujo.devolver(newCh)
+      self.flujo.devuelve(newCh)
       return componentes.DosPtos()
   elif ch.isalpha():
-    word = []
-    word.append(ch)
-    #Python no se come estos iguales
-    while ((ch = self.flujo.siguiente()).isalnum):
-      word.append(ch)
-    self.flujo.devolver(ch)
+    #print('Isalpha ' + ch)
+    word = ""
+    #ch = self.flujo.siguiente()
+    while ((ch).isalnum()):
+      #print(ch)
+      word += ch
+      ch = self.flujo.siguiente()
+    self.flujo.devuelve(ch)
     if word in self.PR:
+      #print('Dentro')
       return componentes.PR(word, self.nlinea)
     else:
       return componentes.Identif(word, self.nlinea)
   elif ch.isdigit():
-    num = []
-    num.append(ch)
-    #Python no se come estos iguales
-    while((ch=self.flujo.siguiente()).isdigit()):
-      num.append(ch)
+    num = ""
+    num+=ch
+    ch=self.flujo.siguiente()
+    while(ch.isdigit()):
+      #print('isdigit\n')
+      num+=ch
+      ch=self.flujo.siguiente()
     if (ch != '.'):
-      self.flujo.devolver(ch)
+      self.flujo.devuelve(ch)
       return componentes.Numero(num, self.nlinea, 'INTEGER')
     else:
-          #Python no se come estos iguales
-
-      if not (newCh = self.flujo.siguiente().isdigit()):
-        self.flujo.devolver(newCh)
-        self.flujo.devolver(ch)
+      newCh = self.flujo.siguiente()
+      if not (newCh.isdigit()):
+        self.flujo.devuelve(newCh)
+        self.flujo.devuelve(ch)
         print "ERROR: NUMERO REAL MAL ESPECIFICADO" # tenemos un comentario no abierto
         return self.Analiza()
-      num.append(ch)
-          #Python no se come estos iguales
-
-      while((ch=self.flujo.siguiente()).isdigit()):
-        num.append(ch)
-      self.flujo.devolver(ch)
+      num+=ch
+      num+=newCh
+      ch=self.flujo.siguiente()
+      while((ch).isdigit()):
+        #print('isfloat\n')
+        num+=ch
+        ch=self.flujo.siguiente()
+      self.flujo.devuelve(ch)
       return componentes.Numero(num, self.nlinea, 'FLOAT')
-  elif ch== "\n":
+  elif (ch is not '' and ord(ch) == 13):
     self.nlinea += 1
-    self.Analiza()
+    return self.Analiza()
+  elif (ch is not '' and ord(ch) == 10):
+    return self.Analiza()
+  elif ch == '=':
+    return componentes.OpRel('=', self.nlinea)
+  elif ch == '<':
+    newCh = self.flujo.siguiente()
+    if newCh == '>':
+      return componentes.OpRel('<>', self.nlinea)
+    elif newch == '=':
+      return componentes.OpRel('<=', self.nlinea)
+    else:
+      self.flujo.devuelve(newCh)
+      return componentes.OpRel('<', self.nlinea)
+  elif ch == '>':
+    newCh = self.flujo.siguiente()
+    if newCh == '=':
+      return componentes.OpRel('>=', self.nlinea)
+    else:
+      self.flujo.devuelve(newCh)
+      return componentes.OpRel('>', self.nlinea)
+  elif len(ch) is not 0:
+    print "ERROR: CARACTER NO DEFINIDO EN LA ESPECIFICACION DEL LENGUAJE"
+    return self.Analiza()
+
     
 
 
@@ -132,18 +162,16 @@ class Analex:
 ############################################################################
 if __name__=="__main__":
     script, filename=argv
-    txt=open(filename)
+    txt=open(filename).read()
     print "Este es tu fichero %r" % filename
     i=0
     fl = flujo.Flujo(txt)
     analex=Analex(fl)
-    try:
+    c=analex.Analiza()
+    while c :
+      print c
       c=analex.Analiza()
-      while c :
-       print c
-       c=analex.Analiza()
-      i=i+1
-    except errores.Error, err:
-     sys.stderr.write("%s\n" % err)
-     analex.muestraError(sys.stderr)
+    i=i+1
+    
+    
 
