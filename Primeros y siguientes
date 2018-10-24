@@ -1,0 +1,51 @@
+NO_TERMINALES   | ANULABLE      | 	    PRIMEROS	       					|
+----------------+---------------+---------------------------------------------------------------+
+Programa	|    NO		|{PROGRAMA}							|
+decl_var	|    SÍ		|{VAR}								|
+decl_v		|    SÍ		|{id}								|
+lista_id	|    NO		|{id}								|
+resto_listaid	|    SÍ		|{,}								|
+Tipo		|    NO		|{ENTERO,REAL,BOOLEANO},{VECTOR}				|
+Tipo_std	|    NO		|{ENTERO},{REAL},{BOOLEANO}					|
+instrucciones	|    NO		|{INICIO}							|
+lista_inst	|    SÍ		|{INICIO,id,LEE,ESCRIBE,SI,MIENTRAS}				|
+instrucción	|    NO		|{INICIO},{id},{LEE,ESCRIBE},{SI},{MIENTRAS}			|
+Inst_simple	|    NO		|{id}								|
+resto_instsimple|    SÍ		|{opasigna},{[}							|
+variable	|    NO		|{id}								|
+resto_var	|    SÍ		|{[}								|
+inst_e/s	|    NO		|{LEE},{ESCRIBE}						|
+expresión	|    NO		|{id,num,(,NO,CIERTO,FALSO,+,-},{id,num,(,NO,CIERTO,FALSO,+,-}	|
+expr_simple	|    NO		|{id,num,(,NO,CIERTO,FALSO},{+,-}				|
+resto_exsimple	|    SÍ		|{opsuma},{O}							|
+termino		|    NO		|{id,num,(,NO,CIERTO,FALSO}					|
+resto_term	|    SÍ		|{opmult},{Y}							|
+factor		|    NO		|{id},{num},{(},{NO},{CIERTO},{FALSO}				|
+signo		|    NO		|{+},{-}							|
+------------------------------------------------------------------------------------------------+
+
+----------------+-----------------------------------------------+
+NO_TERMINALES   |                  SIGUIENTES		        |
+----------------+-----------------------------------------------+
+Programa	|{$					
+decl_var	|{INICIO,
+decl_v		|{INICIO,
+lista_id	|{:,
+resto_listaid	|{:,
+Tipo		|{;,
+Tipo_std	|{;,
+instrucciones	|{.,
+lista_inst	|{FIN,
+instrucción	|{;,SINO,
+Inst_simple	|{;,SINO,
+resto_instsimple|{;,SINO,
+variable	|{opmult,Y,opsuma, O,],oprel,ENTONCES,HACER,),;,SINO,
+resto_var	|{opmult,Y,opsuma, O,],oprel,ENTONCES,HACER,),;,SINO,
+inst_e/s	|{;,SINO,
+expresión	|{ENTONCES,HACER,),;,SINO,
+expr_simple	|{],oprel,ENTONCES,HACER,),;,SINO
+resto_exsimple	|{],oprel,ENTONCES,HACER,),;,SINO
+termino		|{opsuma, O,],oprel,ENTONCES,HACER,),;,SINO
+resto_term	|{opsuma, O,],oprel,ENTONCES,HACER,),;,SINO
+factor		|{opmult,Y,opsuma, O,],oprel,ENTONCES,HACER,),;,SINO
+signo 		|{id,num,(,NO,CIERTO,FALSO,
