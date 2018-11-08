@@ -61,6 +61,8 @@ class PtoComa(Componente):
 
 class DosPtos(Componente):
  pass
+class EOF(Componente):
+ pass
 
 # Clase que define la categoria OpAdd 
 class OpAdd(Componente):

@@ -36,6 +36,9 @@ class Anasint:
             self.comprueba("Punto")
         else:
             print "Error: SE ESPERABA PR PROGRAMA en linea " + str(self.lexico.nlinea)
+            while not (self.componente.cat == "EOF"):
+                self.avanza()
+            return
     
     def analizaDeclVar(self):
         if self.componente.cat == "PR" and self.componente.valor == "VAR":

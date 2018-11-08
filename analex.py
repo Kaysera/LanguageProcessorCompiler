@@ -68,7 +68,6 @@ class Analex:
     return componentes.PtoComa()
   elif ch == "{":
     while ch != "}":
-      #print('Wiiii\n')
       ch = self.flujo.siguiente()
     return self.Analiza()
   elif ch == "}":
@@ -82,16 +81,12 @@ class Analex:
       self.flujo.devuelve(newCh)
       return componentes.DosPtos()
   elif ch.isalpha():
-    #print('Isalpha ' + ch)
     word = ""
-    #ch = self.flujo.siguiente()
     while ((ch).isalnum()):
-      #print(ch)
       word += ch
       ch = self.flujo.siguiente()
     self.flujo.devuelve(ch)
     if word in self.PR:
-      #print('Dentro')
       return componentes.PR(word, self.nlinea)
     else:
       return componentes.Identif(word, self.nlinea)
@@ -100,7 +95,6 @@ class Analex:
     num+=ch
     ch=self.flujo.siguiente()
     while(ch.isdigit()):
-      #print('isdigit\n')
       num+=ch
       ch=self.flujo.siguiente()
     if (ch != '.'):
@@ -117,7 +111,6 @@ class Analex:
       num+=newCh
       ch=self.flujo.siguiente()
       while((ch).isdigit()):
-        #print('isfloat\n')
         num+=ch
         ch=self.flujo.siguiente()
       self.flujo.devuelve(ch)
@@ -148,6 +141,8 @@ class Analex:
   elif len(ch) is not 0:
     print "ERROR: CARACTER NO DEFINIDO EN LA ESPECIFICACION DEL LENGUAJE"
     return self.Analiza()
+  else:
+    return componentes.EOF()
 
     
 
@@ -168,10 +163,9 @@ if __name__=="__main__":
     fl = flujo.Flujo(txt)
     analex=Analex(fl)
     c=analex.Analiza()
-    while c :
+    while c.cat != "EOF":
       print c
       c=analex.Analiza()
-    i=i+1
-    
+    print c
     
 
