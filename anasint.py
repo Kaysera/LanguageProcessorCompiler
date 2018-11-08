@@ -11,6 +11,7 @@ from sets import ImmutableSet
 
 class Anasint:
     def __init__(self, lexico):
+	self.tablaSim = {}
         self.lexico = lexico
         self.avanza()
         self.analizaPrograma()
@@ -39,10 +40,18 @@ class Anasint:
     def analizaDeclVar(self):
         if self.componente.cat == "PR" and self.componente.valor == "VAR":
             self.avanza()
-            self.analizaListaId()
+            listaIDs = self.analizaListaId()
             self.comprueba("DosPtos")
-            self.analizaTipo()
+            tipo = self.analizaTipo()
             self.comprueba("PtoComa")
+
+	    # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
+	    for identif in listaIDs:
+		if (identif in self.tablaSim):
+		    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
+		else:
+		    self.tablaSim[identif] = tipo
+
             self.analizaDeclV()
         elif self.componente.cat == "PR" and self.componente.valor =="INICIO" :
             pass
@@ -54,10 +63,18 @@ class Anasint:
     
     def analizaDeclV(self):
         if self.componente.cat == "Identif":
-            self.analizaListaId()
+            listaIDs = self.analizaListaId()
             self.comprueba("DosPtos")
-            self.analizaTipo()
+            tipo = self.analizaTipo()
             self.comprueba("PtoComa")
+
+	    # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
+	    for identif in listaIDs:
+		if (identif in self.tablaSim):
+		    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
+		else:
+		    self.tablaSim[identif] = tipo
+
             self.analizaDeclV()
         elif self.componente.cat == "PR" and self.componente.valor == "INICIO":
             pass
@@ -69,8 +86,11 @@ class Anasint:
     
     def analizaListaId(self):
         if self.componente.cat == "Identif":
+	    identif = self.componente.valor
             self.avanza()
-            self.analizaRestoListaId()
+            restoIds = self.analizaRestoListaId()
+	    restoIds.append(identif)
+	    return (restoIds)
         else:
             print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
             while not (self.componente.cat == "PtoComa"):
@@ -80,9 +100,10 @@ class Anasint:
     def analizaRestoListaId(self):
         if self.componente.cat == "Coma":
             self.avanza()
-            self.analizaListaId()
+            restoIDs = self.analizaListaId()
+	    return restoIDs
         elif self.componente.cat == "DosPtos":
-            pass
+            return []
         else:
             print "Error: SE ESPERABA COMA O DOS PUNTOS en linea " + str(self.lexico.nlinea)
             while not (self.componente.cat == "PtoComa"):
@@ -91,13 +112,15 @@ class Anasint:
     
     def analizaTipo(self):
         if self.componente.cat =="PR"and self.componente.valor in ["ENTERO", "REAL", "BOOLEANO"]:
-            self.analizaTipoStd()
-        elif self.componente.cat == "VECTOR":
+            tipo = self.analizaTipoStd()
+	    return tipo
+        elif self.componente.cat == "PR" and self.componente.valor == "VECTOR":
             self.avanza()
             self.comprueba("CorAp")
             self.comprueba("Numero")
             self.comprueba("CorCi")
             self.analizaTipoStd()
+	    return "VECTOR"
         else:
             print "Error: SE ESPERABA TIPO O VECTOR en linea " + str(self.lexico.nlinea)
             while not (self.componente.cat == "PtoComa"):
@@ -106,7 +129,9 @@ class Anasint:
     
     def analizaTipoStd(self):
         if self.componente.cat =="PR"and self.componente.valor in ["ENTERO", "REAL", "BOOLEANO"]:
+	    tipo = self.componente.valor
             self.avanza()
+	    return tipo
         else:
             print "Error: TIPO INCORRECTO"
             while not (self.componente.cat == "PtoComa"):
