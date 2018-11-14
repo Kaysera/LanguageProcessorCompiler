@@ -223,6 +223,9 @@ class Anasint:
 
     def analizaInstSimple(self):
         if self.componente.cat == "Identif":
+	    # RESTRICCION SEMANTICA: definir variables antes de usarlas
+	    if (self.componente.valor not in self.tablaSim):
+	        print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
             self.avanza()
             self.analizaRestoInstSimple()
         else: 
@@ -251,6 +254,9 @@ class Anasint:
     
     def analizaVariable(self):
         if self.componente.cat == "Identif":
+	    # RESTRICCION SEMANTICA: definir variables antes de usarlas
+	    if (self.componente.valor not in self.tablaSim):
+	        print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
             self.avanza()
             self.analizaRestoVar()
         else:
@@ -276,6 +282,10 @@ class Anasint:
         if self.componente.cat == "PR" and self.componente.valor == "LEE":
             self.avanza()
             self.comprueba("ParentAp")
+	    # RESTRICCION SEMANTICA: el argumento de LEE solo puede ser entero o real
+	    if (self.tablaSim[self.componente.valor] not in ["ENTERO", "REAL"]):
+		print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
+
             self.comprueba("Identif")
             self.comprueba("ParentCi")
         elif self.componente.cat == "PR" and self.componente.valor == "ESCRIBE":
