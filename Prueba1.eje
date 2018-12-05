@@ -2,6 +2,7 @@ PROGRAMA p1;
 VAR i,x:ENTERO;
 a,b:REAL;
 c,d:BOOLEANO;
+h : VECTOR[5] DE ENTERO;
 INICIO
   i:=0.0;
    MIENTRAS (i<>5) HACER
