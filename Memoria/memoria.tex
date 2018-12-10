@@ -1,1 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[spanish,activeacute]{babel}
+\usepackage{enumerate}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{alltt}
+\usepackage[T1]{fontenc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{subcaption}
+%\usepackage{listings}
+%\usepackage{mathtools}
+\usepackage{amsmath}
+%\usepackage{amssymb}
+%Gummi|065|=)
 
+%\parindent 3em 
+%\oddsidemargin 0.45in
+%\textwidth 5.75in
+%\parskip 0.05in
+%\topmargin 0in
+%ESTO ES COSA DEL LISTINGS
+	\usepackage{listingsutf8}
+%	\usepackage{inconsolata}
+	\usepackage{xcolor}
+	\definecolor{dkgreen}{rgb}{0,0.6,0}
+	\definecolor{greenv2}{rgb}{0,0.9,0}
+	\definecolor{gray}{rgb}{0.5,0.5,0.5}
+	\definecolor{mauve}{rgb}{0.58,0,0.82}
+	
+	\lstset{
+	  frame=l,  % Agregar el marco b -> bottom, t -> top, tb ambos
+	  aboveskip=3mm,
+	  belowskip=3mm,
+	  rulecolor=\color{greenv2},
+	  showstringspaces=false,
+	  columns=flexible,
+	  basicstyle={\small\ttfamily},
+	  numbers=left,
+	  numberstyle=\tiny\color{gray},
+	  numbersep=5pt,
+	  keywordstyle=\color{blue},
+	  commentstyle=\color{dkgreen},
+	  stringstyle=\color{mauve},
+	  breaklines=true,
+	  breakatwhitespace=true
+	  inputencoding=utf8
+	  extendedchars=true,
+	  literate={ñ}{{\~n}}1 {>}{$>$}1 {<}{$<$}1 {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {¿}{\textquestiondown}1 ,
+	  tabsize=3
+	}
+	\lstset{numbers=left, numberstyle={\scriptsize } , stepnumber=1, numbersep=8pt}
+
+%ESTO ES COSA DEL LISTINGS
+\newcommand{\refcano}[1]{\hypersetup{pdfborder=0 0 1}\hyperref{#1}{}{}{#1}\hypersetup{pdfborder=0 0 0}}
+\newcommand{\nt}[1]{\langle#1\rangle}
+\newcommand{\regla}[2]{\nt{#1} \ \ \ &\rightarrow \ \ \ #2 \\}
+\title{\textbf{Procesadores de Lenguajes}}
+\author{Guillermo Tomás Fernández Martín, Luís González Naharro}
+
+
+\begin{document}
+
+
+\begin{titlepage}
+
+\begin{center}
+\vspace*{-1in}
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=8cm]{esiilogo.jpg}
+\end{center}
+\end{figure}
+
+FACULTAD DE INGENIER'IA INFORM'ATICA\\
+\vspace*{0.15in}
+PROCESADORES DE LENGUAJES\\
+\vspace*{0.15in}
+\vspace*{0.2in}
+\begin{Large}
+\textbf{COMPILADOR DE PRÁCTICAS - MEMORIA} \\
+\end{Large}
+\vspace*{0.3in}
+
+\rule{80mm}{0.1mm}\\
+\vspace*{0.1in}
+\vspace*{0.3in}
+\begin{large}
+Realizado por:\\ Guillermo Tomás Fernández Martín, Luís González Naharro\\
+\textit{\{GuillermoTomas.Fernandez, Luis.Gonzalez9\}@alu.uclm.es}
+
+\end{large}
+\end{center}
+%\begin{flushright}
+%Albacete, 2 de junio de 2013
+%\end{flushright}
+
+\end{titlepage}
+
+
+
+\pagenumbering{arabic}
+%De esta forma sale nombre de Tabla en vez de Cuadro
+\renewcommand\tablename{Tabla}
+
+\end{document}
