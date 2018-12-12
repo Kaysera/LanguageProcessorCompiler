@@ -2,13 +2,15 @@
 
 class AST:
 	def __str__(self):
-		return self.arbol(self)
+		return self.arbol()
 
 class NodoAsignacion(AST):
 	def __init__(self, izda, exp, linea):
 		self.izda = izda
 		self.exp = exp
 		self.linea = linea
+		self.compsem()
+
 
 	def compsem(self):
 		self.izda.compsem()
@@ -33,7 +35,7 @@ class NodoAsignacion(AST):
 				print "Error: el tipo ENTERO es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
 
 	def arbol(self):
-		return '( "Asignacion"\n  "linea: %d" \n%s\n%s\n)' % (self.linea, self.izda, self.exp)
+		return '( "Asignacion"\n  "linea: %s" \n%s\n%s\n)' % (self.linea, self.izda, self.exp)
 
 class NodoSi(AST):
 	def __init__(self, exp, si, sino, linea):
@@ -41,6 +43,8 @@ class NodoSi(AST):
 		self.si = si
 		self.sino = sino
 		self.linea = linea
+		self.compsem()
+
 
 	def compsem(self):
 		self.exp.compsem()
@@ -48,25 +52,27 @@ class NodoSi(AST):
 		self.sino.compsem()
 
 	def arbol(self):
-		return '( "Si" "linea: %d" %s\n %s\n %s\n )' % (self.linea, self.exp, self.si, self.sino)
+		return '( "Si" "linea: %s" %s\n %s\n %s\n )' % (self.linea, self.exp, self.si, self.sino)
 
 class NodoMientras(AST):
 	def __init__(self, exp, inst, linea):
 		self.exp = exp
 		self.inst = inst
 		self.linea = linea
+		self.compsem()
 
 	def compsem(self):
 		self.exp.compsem()
 		self.inst.compsem()
 
 	def arbol(self):
-		return '( "Mientras" "linea: %d" %s\n %s\n )' % (self.linea, self.exp, self.inst)
+		return '( "Mientras" "linea: %s" %s\n %s\n )' % (self.linea, self.exp, self.inst)
 
 class NodoLee(AST):
 	def __init__(self,var,linea):
 		self.var = var
 		self.linea = linea
+		self.compsem()
 
 	def compsem(self):
 		# La variable a leer solo puede ser entera o real
@@ -74,23 +80,25 @@ class NodoLee(AST):
 			print "Error: no se puede leer por teclado una variable booleana (error semantico en linea " + str(self.linea) + ")"
 
 	def arbol(self):
-		return '( "Lee" "linea: %d" %s )' % (self.linea, self.var)
+		return '( "Lee" "linea: %s" %s )' % (self.linea, self.var)
 
 class NodoEscribe(AST):
 	def __init__(self, exp, linea):
 		self.exp = exp
 		self.linea = linea
+		self.compsem()
 
 	def compsem(self):
 		self.exp.compsem()
 
 	def arbol(self):
-		return '( "Escribe" "linea: %d" %s )' % (self.linea, self.exp)
+		return '( "Escribe" "linea: %s" %s )' % (self.linea, self.exp)
 
 class NodoCompuesta(AST):
 	def __init__(self, lsen, linea):
 		self.lsen = lsen
 		self.linea = linea
+		self.compsem()
 
 	def compsem(self):
 		for inst in self.lsen:
@@ -109,6 +117,7 @@ class NodoComparacion(AST):
 		self.linea = linea
 		self.op = op
 		self.tipo = None
+		self.compsem()
 
 	
 	def compsem(self):
@@ -119,24 +128,24 @@ class NodoComparacion(AST):
 			if self.dcha.tipo == "BOOLEANO":
 				print "Error: el tipo ENTERO es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
 			elif self.dcha.tipo == "REAL":
-				self.tipo == "REAL"
+				self.tipo = "REAL"
 			else:
-				self.tipo == "ENTERO"
+				self.tipo = "ENTERO"
 
 		if self.izq.tipo == "REAL":
 			if self.dcha.tipo == "BOOLEANO":
 				print "Error: el tipo real es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
 			else:
-				self.tipo == "REAL"
+				self.tipo = "REAL"
 		
 		if self.izq.tipo == "BOOLEANO":
 			if self.dcha.tipo is not "BOOLEANO":
 				print "Error: El tipo booleano es incompatible con tipos no booleanos (error semantico en linea " + str(self.linea) + ")"
 			else:
-				self.tipo == "BOOLEANO"
+				self.tipo = "BOOLEANO"
 
 	def arbol(self):
-		return '( "Comparacion" "op: %s" "tipo: %s" "linea: %d" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
+		return '( "Comparacion" "op: %s" "tipo: %s" "linea: %s" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
 
 class NodoAritmetico(AST):
 	def __init__(self, izq, dcha, linea, op):
@@ -145,90 +154,95 @@ class NodoAritmetico(AST):
 		self.linea = linea
 		self.op = op
 		self.tipo = None
+		self.compsem()
 
 	
 	def compsem(self):
 		self.izq.compsem()
 		self.dcha.compsem()
-
 		if self.izq is not None:
 			if self.izq.tipo == "ENTERO":
 				if self.dcha.tipo == "BOOLEANO":
 					print "Error: el tipo ENTERO es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
 				elif self.dcha.tipo == "REAL":
-					self.tipo == "REAL"
+					self.tipo = "REAL"
 				else:
-					self.tipo == "ENTERO"
+					self.tipo = "ENTERO"
 
 			if self.izq.tipo == "REAL":
 				if self.dcha.tipo == "BOOLEANO":
 					print "Error: el tipo real es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
 				else:
-					self.tipo == "REAL"
+					self.tipo = "REAL"
 		
 			if self.izq.tipo == "BOOLEANO":
 				if self.dcha.tipo is not "BOOLEANO":
 					print "Error: El tipo booleano es incompatible con tipos no booleanos (error semantico en linea " + str(self.linea) + ")"
 				else:
-					self.tipo == "BOOLEANO"
+					self.tipo = "BOOLEANO"
 
 		else:
 			self.tipo = self.dcha.tipo
 
 	def arbol(self):
-		return '( "Aritmetica" "op: %s" "tipo: %s" "linea: %d" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
+		return '( "Aritmetica" "op: %s" "tipo: %s" "linea: %s" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
 
 class NodoEntero(AST):
 	def __init__(self, valor, linea):
 		self.valor = valor
 		self.linea = linea
+		self.compsem()
 	
 	def compsem(self):
 		self.tipo = "ENTERO"
 	
 	def arbol(self):
-		return '( "Entero" "valor: %d" "tipo: %s" "linea: %d" )' % (self.valor, self.tipo, self.linea)
+		return '( "Entero" "valor: %s" "tipo: %s" "linea: %s" )' % (self.valor, self.tipo, self.linea)
 
 
 class NodoReal(AST):
 	def __init__(self, valor, linea):
 		self.valor = valor
 		self.linea = linea
+		self.compsem()
 	
 	def compsem(self):
 		self.tipo = "REAL"
 	
 	def arbol(self):
-		return '( "Real" "valor: %d" "tipo: %s" "linea: %d" )' % (self.valor, self.tipo, self.linea)
+		return '( "Real" "valor: %s" "tipo: %s" "linea: %s" )' % (self.valor, self.tipo, self.linea)
 
 class NodoBooleano(AST):
 	def __init__(self, valor, linea):
 		self.valor = valor
 		self.linea = linea
+		self.compsem()
 	
 	def compsem(self):
 		self.tipo = "BOOLEANO"
 	
 	def arbol(self):
-		return '( "BOOLEANO" "valor: %d" "tipo: %s" "linea: %d" )' % (self.valor, self.tipo, self.linea)
+		return '( "BOOLEANO" "valor: %s" "tipo: %s" "linea: %s" )' % (self.valor, self.tipo, self.linea)
 
 class NodoAccesoVariable(AST):
 	def __init__(self, var, linea, tipo):
 		self.var = var
 		self.linea = linea
 		self.tipo = tipo
+		self.compsem()
 
 	def compsem(self):
 		pass
 
 	def arbol(self):
-		return '( "AccesoVariable" "v: %s" "linea: %d" )' % (self.var, self.linea)
+		return '( "AccesoVariable" "v: %s" "linea: %s" )' % (self.var, self.linea)
 
 class NodoAccesoVector(AST):
 	def __init__(self, vect, exp, linea):
 		self.vect = vect
 		self.exp = exp
 		self.linea = linea
+		self.compsem()
 
 	def compsem(self):
 		self.exp.compsem()
@@ -242,4 +256,4 @@ class NodoAccesoVector(AST):
 		self.tipo = self.vect.tipo
 
 	def arbol(self):
-		return '( "AccesoVector" "tipo: %s" "linea: %d" %s\n %s\n)' % (self.tipo, self.linea, self.vect, self.exp)
+		return '( "AccesoVector" "tipo: %s" "linea: %s" %s\n %s\n)' % (self.tipo, self.linea, self.vect, self.exp)

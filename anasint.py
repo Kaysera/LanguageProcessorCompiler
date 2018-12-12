@@ -153,7 +153,7 @@ class Anasint:
     def analizaInstrucciones(self):
         if self.componente.cat == "PR" and self.componente.valor == "INICIO":
             self.avanza()
-            self.analizaListaInst()
+            self.ast = self.analizaListaInst()
             if self.componente.cat == "PR" and self.componente.valor == "FIN":
                 self.avanza()
             else:
@@ -172,10 +172,9 @@ class Anasint:
             inst = self.analizaInstruccion()
             self.comprueba("PtoComa")
             linst = self.analizaListaInst()
-	    return ([inst] + linst)
+            return [inst] + linst
         elif self.componente.cat == "PR" and self.componente.valor == "FIN":
-	    return []
-            pass
+	        return []
         else:
             print "Error: SE ESPERABA PR, Identificador o FIN en linea " + str(self.lexico.nlinea)
             while not (self.componente.cat == "PR" and self.componente.valor == "FIN"):
@@ -186,18 +185,17 @@ class Anasint:
         if self.componente.cat == "PR" and self.componente.valor == "INICIO":
             self.avanza()
             linst = self.analizaListaInst()
-	    nodoCompuesta = AST.NodoCompuesta(linst, self.lexico.nlinea)
-	    self.ast.append(nodoCompuesta)
             if self.componente.cat == "PR" and self.componente.valor == "FIN":
                 self.avanza()
+                return AST.NodoCompuesta(linst, self.lexico.nlinea)
             else:
                 while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
                     self.avanza()
                 return
         elif self.componente.cat == "Identif":
-            self.analizaInstSimple()
+            return self.analizaInstSimple()
         elif self.componente.cat =="PR"and self.componente.valor in ["LEE", "ESCRIBE"]:
-            self.analizaInstES()
+            return self.analizaInstES()
         elif self.componente.cat == "PR" and self.componente.valor == "SI":
             self.avanza()
             expr = self.analizaExpresion()
@@ -217,8 +215,7 @@ class Anasint:
                     self.avanza()
                 return
             instSino = self.analizaInstruccion()
-	    nodoSi = AST.NodoSi(expr, instSi, instSino, self.lexico.nlinea)
-	    self.ast.append(nodoSi)
+            return AST.NodoSi(expr, instSi, instSino, self.lexico.nlinea)
         elif self.componente.cat == "PR" and self.componente.valor == "MIENTRAS":
             self.avanza()
             expr = self.analizaExpresion()
@@ -230,8 +227,7 @@ class Anasint:
                     self.avanza()
                 return
             inst = self.analizaInstruccion()
-	    nodoMientras = AST.NodoMientras(expr, inst, self.lexico.nlinea)
-	    self.ast.append(nodoMientras)
+            return AST.NodoMientras(expr, inst, self.lexico.nlinea)
         else: 
             print "Error: Instruccion invalida"
             while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
@@ -241,14 +237,13 @@ class Anasint:
     def analizaInstSimple(self):
         if self.componente.cat == "Identif":
 	    # RESTRICCION SEMANTICA: definir variables antes de usarlas
-	    if (self.componente.valor not in self.tablaSim):
-	        print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
-
+            if (self.componente.valor not in self.tablaSim):
+                print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
             accVar = AST.NodoAccesoVariable(self.componente.valor, self.lexico.nlinea, self.tablaSim[self.componente.valor])
             self.avanza()
             expr = self.analizaRestoInstSimple()
             nodoAsignacion = AST.NodoAsignacion(accVar, expr, self.lexico.nlinea)
-	    self.ast.append(nodoAsignacion)
+            return nodoAsignacion
         else: 
             print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
@@ -258,13 +253,13 @@ class Anasint:
     def analizaRestoInstSimple(self):
         if self.componente.cat == "OpAsigna":
             self.avanza()
-            self.analizaExpresion()
+            return self.analizaExpresion()
         elif self.componente.cat == "CorAp":
             self.avanza()
             self.analizaExprSimple()
             self.comprueba("CorCi")
             self.comprueba("OpAsigna")
-            self.analizaExpresion()
+            return self.analizaExpresion()
         elif (self.componente.cat =="PR"and self.componente.valor in ["SINO"]) or self.componente.cat == "PtoComa":
             pass
         else:
@@ -313,21 +308,21 @@ class Anasint:
         if self.componente.cat == "PR" and self.componente.valor == "LEE":
             self.avanza()
             self.comprueba("ParentAp")
-	    # RESTRICCION SEMANTICA: el argumento de LEE solo puede ser entero o real
-	    if (self.tablaSim[self.componente.valor] not in ["ENTERO", "REAL"]):
-		print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
+	        # RESTRICCION SEMANTICA: el argumento de LEE solo puede ser entero o real
+            if (self.tablaSim[self.componente.valor] not in ["ENTERO", "REAL"]):
+                print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
 
-	    nodoLee = AST.NodoLee(self.componente.valor, self.lexico.nlinea)
+            nodoLee = AST.NodoLee(self.componente.valor, self.lexico.nlinea)
             self.comprueba("Identif")
             self.comprueba("ParentCi")
-	    self.ast.append(nodoLee)
+            return nodoLee
         elif self.componente.cat == "PR" and self.componente.valor == "ESCRIBE":
             self.avanza()
             self.comprueba("ParentAp")
             expr = self.analizaExprSimple()
             self.comprueba("ParentCi")
-	    nodoEscribe = AST.NodoEscribe(expr, self.lexico.nlinea)
-	    self.ast.append(nodoEscribe)
+            nodoEscribe = AST.NodoEscribe(expr, self.lexico.nlinea)
+            return nodoEscribe
         else: 
             print "Error: SE ESPERABA LEE O ESCRIBE en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
@@ -338,11 +333,11 @@ class Anasint:
         if (self.componente.cat =="PR"and self.componente.valor in ["NO", "CIERTO", "FALSO"]) or self.componente.cat == "Identif" or self.componente.cat == "Numero" or self.componente.cat == "ParentAp" or self.componente.cat == "OpAdd":
             izd = self.analizaExprSimple()
             dcha = self.analizaExpresionPrima()
-	    if dcha is None:
-		self.ast.append(izd)
-	    else:
-		nodoComp = AST.NodoComparacion(izd, dcha[0], self.lexico.nlinea, dcha[1])
-		self.ast.append(nodoComp)
+            if dcha is None:
+                return izd
+            else:
+                nodoComp = AST.NodoComparacion(izd, dcha[0], self.lexico.nlinea, dcha[1])
+                return nodoComp
         else: 
             print "Error: SE ESPERABA Comienzo de Expresion Simple en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor in ["ENTONCES","HACER", "SINO"]) or self.componente.cat == "PtoComa"):
@@ -353,10 +348,10 @@ class Anasint:
         if (self.componente.cat =="PR"and self.componente.valor in ["ENTONCES", "HACER", "SINO"]) or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa" :
             return None
         elif self.componente.cat == "OpRel":
-	    op = self.componente.valor
+            op = self.componente.valor
             self.avanza()
             arb = self.analizaExprSimple()
-	    return [arb, op]
+            return [arb, op]
         else: 
             print "Error: SE ESPERABA Comienzo de Expresion Simple en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor in ["ENTONCES","HACER", "SINO"]) or self.componente.cat == "PtoComa"):
@@ -366,14 +361,13 @@ class Anasint:
     def analizaExprSimple(self):
         if (self.componente.cat =="PR"and self.componente.valor in ["NO", "CIERTO", "FALSO"]) or self.componente.cat == "ParentAp" or self.componente.cat == "Identif" or self.componente.cat == "Numero":
             term = self.analizaTermino()
-            ret = self.analizaRestoExprSimple(term)
-	    return ret
+            return self.analizaRestoExprSimple(term)
         elif self.componente.cat == "OpAdd":
-	    signo = self.componente.valor
+            signo = self.componente.valor
             self.analizaSigno()
             term = self.analizaTermino()
             dcha = self.analizaRestoExprSimple(term)
-	    return AST.NodoAritmetico(None, dcha, self.lexico.nlinea, signo)
+            return AST.NodoAritmetico(None, dcha, self.lexico.nlinea, signo)
         else: 
             print "Error: SE ESPERABA Comienzo de Expresion Simple en linea " + str(self.lexico.nlinea) 
             while not ((self.componente.cat == "PR" and self.componente.valor in ["ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
@@ -382,15 +376,15 @@ class Anasint:
     
     def analizaRestoExprSimple(self, hered):
         if self.componente.cat == "OpAdd":
-	    op = self.componente.valor
+            op = self.componente.valor
             self.avanza()
             term = self.analizaTermino()
-	    nodoSuma = AST.NodoAritmetico(hered, term, self.lexico.nlinea, op)
+            nodoSuma = AST.NodoAritmetico(hered, term, self.lexico.nlinea, op)
             return self.analizaRestoExprSimple(nodoSuma)
         elif self.componente.cat == "PR" and self.componente.valor == "O":
             self.avanza()
             term = self.analizaTermino()
-	    nodoCuasiSuma = AST.NodoAritmetico(hered, term, self.lexico.nlinea, "O")
+            nodoCuasiSuma = AST.NodoAritmetico(hered, term, self.lexico.nlinea, "O")
             return self.analizaRestoExprSimple(nodoCuasiSuma)
         elif (self.componente.cat =="PR"and self.componente.valor in ["ENTONCES", "HACER", "SINO"]) or self.componente.cat == "ParentCi" or self.componente.cat == "CorCi" or self.componente.cat == "OpRel" or self.componente.cat == "PtoComa":
             return hered
@@ -412,18 +406,18 @@ class Anasint:
     
     def analizaRestoTerm(self, hered):
         if self.componente.cat == "OpMult":
-	    op = self.componente.valor
+            op = self.componente.valor
             self.avanza()
             fact = self.analizaFactor()
-	    nodoMult = AST.NodoAritmetico(hered, fact, self.lexico.nlinea, op)
+            nodoMult = AST.NodoAritmetico(hered, fact, self.lexico.nlinea, op)
             return self.analizaRestoTerm(nodoMult)
         elif self.componente.cat == "PR" and self.componente.valor == "Y":
             self.avanza()
             fact = self.analizaFactor()
-	    nodoCuasiMult = AST.NodoAritmetico(hered, fact, self.lexico.nlinea, "Y")
+            nodoCuasiMult = AST.NodoAritmetico(hered, fact, self.lexico.nlinea, "Y")
             return self.analizaRestoTerm(nodoCuasiMult)
-        elif (self.componente.cat =="PR"and self.componente.valor in ["ENTONCES", "HACER", "SINO", "O"]) or self.componente.cat == "ParentCi" or self.componente.cat == "CorCi" or self.componente.cat == "OpRel" or self.componente.cat == "PtoComa" or self.componente.cat == "OpAdd":
-            pass
+        elif (self.componente.cat == "PR" and self.componente.valor in ["ENTONCES", "HACER", "SINO", "O"]) or self.componente.cat == "ParentCi" or self.componente.cat == "CorCi" or self.componente.cat == "OpRel" or self.componente.cat == "PtoComa" or self.componente.cat == "OpAdd":
+            return hered
         else: 
             print "Error: SE ESPERABA Resto de Termino en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor in ["O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "OpAdd" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
@@ -434,28 +428,28 @@ class Anasint:
         if self.componente.cat == "Identif":
             return self.analizaVariable()
         elif self.componente.cat == "Numero":
-	    nodo = None
-	    if self.componente.tipo is "ENTERO":
-	        nodo = AST.NodoEntero(self.componente.valor, self.lexico.nlinea)
-	    else:
-		nodo = AST.NodoReal(self.componente.valor, self.lexico.nlinea)
+            nodo = None
+            if self.componente.tipo is "ENTERO":
+                nodo = AST.NodoEntero(self.componente.valor, self.lexico.nlinea)
+            else:
+                nodo = AST.NodoReal(self.componente.valor, self.lexico.nlinea)
             self.avanza()
-	    return nodo
+            return nodo
         elif self.componente.cat == "ParentAp":
             self.avanza()
             nodo = self.analizaExpresion()
             self.comprueba("ParentCi")
-	    return nodo
+            return nodo
         elif self.componente.cat == "PR" and self.componente.valor == "NO":
             self.avanza()
             fact = self.analizaFactor()
-	    return AST.NodoAritmetico(None, fact, self.lexico.nlinea, "NO")
+            return AST.NodoAritmetico(None, fact, self.lexico.nlinea, "NO")
         elif self.componente.cat == "PR" and self.componente.valor == "CIERTO":
             self.avanza()
-	    return AST.NodoBooleano("CIERTO", self.lexico.nlinea)
+            return AST.NodoBooleano("CIERTO", self.lexico.nlinea)
         elif self.componente.cat == "PR" and self.componente.valor == "FALSO":
             self.avanza()
-	    return AST.NodoBooleano("FALSO", self.lexico.nlinea)
+            return AST.NodoBooleano("FALSO", self.lexico.nlinea)
         
         else: 
             print "Error: SE ESPERABA Factor en linea " + str(self.lexico.nlinea)
@@ -489,7 +483,9 @@ if __name__=="__main__":
     fl = flujo.Flujo(txt)
     analex=analex.Analex(fl)
     anasint = Anasint(analex)
-    print (anasint.tablaSim)
 
-    #for (nodo in anasint.ast):
-	#nodo.arbol()
+    print (anasint.ast)
+
+    for nodo in anasint.ast:
+        if nodo is not None:
+	        print nodo.arbol()

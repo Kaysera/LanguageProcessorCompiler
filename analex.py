@@ -99,7 +99,7 @@ class Analex:
       ch=self.flujo.siguiente()
     if (ch != '.'):
       self.flujo.devuelve(ch)
-      return componentes.Numero(num, self.nlinea, 'INTEGER')
+      return componentes.Numero(num, self.nlinea, 'ENTERO')
     else:
       newCh = self.flujo.siguiente()
       if not (newCh.isdigit()):
@@ -114,7 +114,7 @@ class Analex:
         num+=ch
         ch=self.flujo.siguiente()
       self.flujo.devuelve(ch)
-      return componentes.Numero(num, self.nlinea, 'FLOAT')
+      return componentes.Numero(num, self.nlinea, 'REAL')
   elif (ch is not '' and ord(ch) == 13):
     self.nlinea += 1
     return self.Analiza()
