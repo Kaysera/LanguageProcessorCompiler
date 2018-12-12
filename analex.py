@@ -45,7 +45,7 @@ class Analex:
     self.flujo.devuelve(ch)
     return self.Analiza()
   elif ch== "+":
-    return OpAdd("+", self.nlinea)     
+    return componentes.OpAdd("+", self.nlinea)     
   elif ch== "-":
     return componentes.OpAdd("-",self.nlinea)
   elif ch== "*":
@@ -126,7 +126,7 @@ class Analex:
     newCh = self.flujo.siguiente()
     if newCh == '>':
       return componentes.OpRel('<>', self.nlinea)
-    elif newch == '=':
+    elif newCh == '=':
       return componentes.OpRel('<=', self.nlinea)
     else:
       self.flujo.devuelve(newCh)
