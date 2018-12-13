@@ -8,7 +8,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[hidelinks]{hyperref}
 \usepackage{subcaption}
-%\usepackage{listings}
+\usepackage{listings}
 %\usepackage{mathtools}
 \usepackage{amsmath}
 %\usepackage{amssymb}
@@ -53,13 +53,12 @@
 
 %ESTO ES COSA DEL LISTINGS
 \newcommand{\refcano}[1]{\hypersetup{pdfborder=0 0 1}\hyperref{#1}{}{}{#1}\hypersetup{pdfborder=0 0 0}}
-\newcommand{\nt}[1]{\langle#1\rangle}
-\newcommand{\regla}[2]{\nt{#1} \ \ \ &\rightarrow \ \ \ #2 \\}
 \title{\textbf{Procesadores de Lenguajes}}
 \author{Guillermo Tomás Fernández Martín, Luís González Naharro}
 
 
 \begin{document}
+
 
 
 \begin{titlepage}
@@ -96,11 +95,106 @@ Realizado por:\\ Guillermo Tomás Fernández Martín, Luís González Naharro\\
 %\end{flushright}
 
 \end{titlepage}
+\thispagestyle{empty}
+\vspace*{7in}
+
+\pagenumbering{roman}
+\setcounter{page}{0}
+\tableofcontents
+\newpage
+\lstlistoflistings
+\newpage
 
 
 
 \pagenumbering{arabic}
 %De esta forma sale nombre de Tabla en vez de Cuadro
 \renewcommand\tablename{Tabla}
+
+\section{Introducción}
+A lo largo de esta práctica, se ha realizado un compilador para un lenguaje tipo Pascal, del cual se nos proporciona la gramática que lo genera, así como ciertas pautas para la creación de este compilador. El objetivo es realizar un análisis completo hasta el punto de generación de código, el cual originalmente era orientado a la máquina virtual ROSSI. Sin embargo, debido a la falta de máquina virtual, la práctica finalmente se detiene en la creación del Árbol de Sintaxis Abstracta, sin que haya generación de código. \\
+
+Esta memoria detallará las distintas partes que componen al compilador en su estado actual, de manera independiente, y explicando las partes del código que sean necesarias. Además, el proyecto con todo el código fuente, escrito en Python, se entregará de manera conjunta a esta memoria.
+
+\section{Descripción formal del lenguaje}
+\subsection{Categorías léxicas del lenguaje}
+En nuestro compilador, se ha optado por representar cada categoría léxica con una clase. Por ello, al explicar cada categoría se hará referencia a la clase que la representa en el código. Todas estas clases se encuentran en el fichero \textit{componentes.py}
+\begin{itemize}
+	\item \textbf{Operador de asignación (\textit{OpAsigna}): } el operador de asignación se representa con dos puntos y un símbolo de igual (\textbf{:=})
+	\item \textbf{Llave de Apertura (\textit{LlaveAp}): } La llave de apertura es el símbolo \textit{\{}
+	\item \textbf{Llave de Cierre (\textit{Llaveci}): } La Llave de cierre es el símbolo \textit{\}}
+	\item \textbf{Paréntesis de Apertura (\textit{ParentAp}): } El paréntesis de apertura es el símbolo \textit{(}
+	\item \textbf{Paréntesis de Cierre (\textit{ParentCi}): } El paréntesis de cierre es el símbolo \textit{)}
+	\item \textbf{Corchete de Apertura (\textit{CorAp}): } El corchete de apertura es el símbolo \textit{[}
+	\item \textbf{Corchete de Cierre (\textit{CorCi}): } El corchete de cierre es el símbolo \textit{]}
+	\item \textbf{Punto (\textit{Punto}): } El punto es el símbolo \textit{.}
+	\item \textbf{Coma (\textit{Coma}): } La coma es el símbolo \textit{,}
+	\item \textbf{Punto y Coma (\textit{PtoComa}): } El punto y coma es el símbolo \textit{;}
+	\item \textbf{Dos Puntos (\textit{DosPtos}): } Los dos puntos es el símbolo \textit{:}
+	\item \textbf{Fin de fichero (\textit{EOF}): } Esta categoría léxica, que no se representa con ningún caracter, nos permite saber cuando el fichero de entrada ha terminado de ser leído.
+	\item \textbf{Operador de Suma (\textit{OpAdd}): } Este operador puede tomar dos valores aritméticos (\textit{+, -}).
+	\item \textbf{Operador de Multiplicación (\textit{OpMult}): } Este operador puede tomar dos valores aritméticos (\textit{*, /})
+	\item \textbf{Operador Relacional (\textit{OpRel}): } Este operador puede tomar los siguientes valores: \textit{=,<>,<,<=,>=,>}
+	\item \textbf{Identificadores (\textit{Identif}): } Esta categoría léxica representa los identificadores que pueden aparecer en nuestro sistema. Éstos se generan a partir de la siguiente gramática: 
+		\begin{align*}
+			letra &\rightarrow [a-zA-Z] \\
+			digito &\rightarrow [0-9] \\
+			id &\rightarrow letra(letra|digito)^*
+		\end{align*}
+	\item \textbf{Número (\textit{Número}): } Esta categoría léxica representa los números que pueden aparecer en nuestro sistema, ya sean enteros o reales. Éstos se generan a partir de la siguiente gramática: 
+		\begin{align*}
+			digitos &\rightarrow digito \ digito^* \\
+			fraccion\_opt &\rightarrow . \ digitos \ | \ \lambda \\
+			num &\rightarrow  digitos \ fraccion\_opt \\
+		\end{align*}
+	\item \textbf{Palabra Reservada (\textit{PR}): } Esta categoría léxica representa el conjunto finito de palabras reservadas de nuestro sistema. Dichas palabras reservadas son: \textit{PROGRAMA,  VAR,  VECTOR,  ENTERO,  REAL,  BOOLEANO,  INICIO,  FIN,  SI,  ENTONCES, SINO, MIENTRAS, HACER, LEE, ESCRIBE, Y, O, NO, CIERTO} y \textit{FALSO}. Todas ellas deberán ir en mayúsculas.
+\end{itemize}
+\subsection{Máquina Discriminadora Determinista}
+En esta sección se explicará cómo funciona la MDD en la implementación de nuestro compilador. Para ello, vamos a clasificar nuestras categorías léxicas en tres grandes grupos: Símbolos, Palabras y Números.
+\subsubsection{Símbolos}
+Dentro de este grupo, consideraremos todos los símbolos unitarios, los operadores y el fin de fichero. En este grupo, la mayoría de los elementos son únicos, y por lo tanto la MDD puede detectar directamente a que categoría pertenecen. En el caso de los símbolos compuestos de dos caracteres (operador de asignación u operador relacional), leemos el siguiente caracter. En caso de que sea un espacio, no existe ambiguedad (en el primer caso, sería la categoría \textbf{Dos puntos}, por ejemplo). Si no, el segundo caracter nos elimina también la ambiguedad del valor que puede tomar el operador.
+
+\subsubsection{Palabras}
+En este grupo consideramos los identificadores y las palabras reservadas, ya que se leen igual. La MDD lee el elemento mientras cumpla con la gramática establecida anteriormente, y una vez finaliza busca en la tabla de Palabras Reservadas si coincide con algún elemento. En caso contrario, sabemos que es un identificador. 
+
+\subsubsection{Números}
+Si el primer caracter que se lee es un dígito, la categoría léxica va a ser \textbf{Número}, ya que un identificador no puede comenzar por un dígito. La MDD lee en este caso, comprobando según la gramática especificada anteriormente si el número es Entero o Real.
+
+\subsection{Comprobación de la gramática (A rellenar)}
+
+
+\section{Detalles de implementación}
+A la hora de implementar el sistema, se nos proporcionó una serie de ficheros con el esqueleto del código que tendríamos que completar. Dicho esqueleto contenía parte del analizador léxico, además de una implementación anterior del Árbol de Sintaxis Abstracta que se realizó el año anterior, y que nos ha servido de orientación para realizar nuestra propia implementación. Los ficheros proporcionados son: 
+\begin{itemize}
+	\item \textbf{componentes.py: } Es en este fichero donde se encuentran todas las clases que representan las distintas categorías léxicas. Sin embargo, las clases venían vacías, y se debía añadir el código necesario para almacenar la información necesaria (como el valor, en el caso de un Número) en cada clase.
+	\item \textbf{flujo.py: } Contiene una clase que nos permite leer el flujo de entrada de un programa. Ya venía completo, así que no había que modificar este fichero
+	\item \textbf{Prueba1.eje: } Este fichero contiene un pequeño programa de prueba para que se pueda testear el código que se va generando. 
+	\item \textbf{analex.py: } El esqueleto del analizador léxico. Contenía el constructor de la clase, una función main para testear el programa que se le pasara por parámetro, y un ejemplo de como analizar la entrada.
+\end{itemize}
+A partir de estos ficheros, se ha generado un compilador capaz de crear un Árbol de Sintaxis Abstracta del código que se especifica en la descripción de la práctica.
+
+\subsection{Analizador léxico}
+Esta parte de nuestro compilador es la que implementa la MDD que se ha especificado anteriormente. Gracias al archivo \textbf{flujo.py}, contamos con una función \lstinline[language=Python]{siguiente()} que nos devuelve el siguiente caracter del fichero y una función \lstinline[language=Python]{devuelve()} que nos permite devolver el caracter leído al flujo, para volver a analizarlo (en caso de que hayamos entrado en un camino erróneo)
+
+Hemos creado la función \lstinline[language=Python]{Analiza()}, que nos devuelve el componente léxico que viene a continuación. Para ello, lee el primer caracter para detectar la categoría léxica a la que pertenece con un \lstinline[language=Python]{if-else}, ya que Python no permite la instrucción \lstinline[language=Python]{switch}. Si el primer caracter es un espacio, o una llave de apertura (que nos marca el comienzo de un comentario) omite dicho caracter y sigue leyendo caracteres hasta que encuentra algo distinto del espacio (Listing 1) o la llave de cierre (Listing 2)
+
+% GUILLE: CONTINUE HERE
+
+\newpage
+\begin{lstlisting}[language=Python, caption=Omisión de espacios]
+	if ch==" ":
+    while ch == " ":
+    	ch = self.flujo.siguiente()
+    self.flujo.devuelve(ch)
+    return self.Analiza()
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Python example]
+	elif ch == "{":
+    while ch != "}":
+    	ch = self.flujo.siguiente()
+    return self.Analiza()
+\end{lstlisting}
+
 
 \end{document}
