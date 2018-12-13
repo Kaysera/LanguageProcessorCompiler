@@ -12,8 +12,8 @@ from sets import ImmutableSet
 
 class Anasint:
     def __init__(self, lexico):
-	self.ast = []
-	self.tablaSim = {}
+        self.ast = []
+        self.tablaSim = {}
         self.lexico = lexico
         self.avanza()
         self.analizaPrograma()

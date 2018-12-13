@@ -52,6 +52,8 @@
 	\lstset{numbers=left, numberstyle={\scriptsize } , stepnumber=1, numbersep=8pt}
 
 %ESTO ES COSA DEL LISTINGS
+\newcommand{\nt}[1]{\langle#1\rangle}
+\newcommand{\regla}[2]{\nt{#1} \ \ \ &\rightarrow \ \ \ #2 \\}
 \newcommand{\refcano}[1]{\hypersetup{pdfborder=0 0 1}\hyperref{#1}{}{}{#1}\hypersetup{pdfborder=0 0 0}}
 \title{\textbf{Procesadores de Lenguajes}}
 \author{Guillermo Tomás Fernández Martín, Luís González Naharro}
@@ -77,7 +79,7 @@ PROCESADORES DE LENGUAJES\\
 \vspace*{0.15in}
 \vspace*{0.2in}
 \begin{Large}
-\textbf{COMPILADOR DE PRÁCTICAS - MEMORIA} \\
+\textbf{Práctica 3: Desarrollo de un compilador sencillo - Memoria} \\
 \end{Large}
 \vspace*{0.3in}
 
@@ -178,9 +180,6 @@ Esta parte de nuestro compilador es la que implementa la MDD que se ha especific
 
 Hemos creado la función \lstinline[language=Python]{Analiza()}, que nos devuelve el componente léxico que viene a continuación. Para ello, lee el primer caracter para detectar la categoría léxica a la que pertenece con un \lstinline[language=Python]{if-else}, ya que Python no permite la instrucción \lstinline[language=Python]{switch}. Si el primer caracter es un espacio, o una llave de apertura (que nos marca el comienzo de un comentario) omite dicho caracter y sigue leyendo caracteres hasta que encuentra algo distinto del espacio (Listing 1) o la llave de cierre (Listing 2)
 
-% GUILLE: CONTINUE HERE
-
-\newpage
 \begin{lstlisting}[language=Python, caption=Omisión de espacios]
 	if ch==" ":
     while ch == " ":
@@ -189,12 +188,113 @@ Hemos creado la función \lstinline[language=Python]{Analiza()}, que nos devuelv
     return self.Analiza()
 \end{lstlisting}
 
-\begin{lstlisting}[language=Python, caption=Python example]
+\begin{lstlisting}[language=Python, caption=Tratamiento de comentarios]
 	elif ch == "{":
     while ch != "}":
     	ch = self.flujo.siguiente()
     return self.Analiza()
 \end{lstlisting}
+
+Cuando el caracter que lee la función es un caracter alfabético, sigue leyendo todos los caracteres alfanuméricos que le siguen hasta encontrar un espacio. Para ello, se hace uso de las funciones predefinidas de Python, que detectan los dígitos, caracteres, etc. Al completar la palabra, comprueba si se encuentra en la tabla de palabras reservadas, y devuelve la categoría léxica apropiada. (Listing 3)
+
+\begin{lstlisting}[language=Python, caption=Detección de palabras]
+	elif ch.isalpha():
+    word = ""
+    while ((ch).isalnum()):
+    	word += ch
+    	ch = self.flujo.siguiente()
+    self.flujo.devuelve(ch)
+    if word in self.PR:
+    	return componentes.PR(word, self.nlinea)
+    else:
+    	return componentes.Identif(word, self.nlinea)
+\end{lstlisting}
+
+Cuando el caracter que se lee es un dígito, quiere decir que la categoría va a ser un Número. La función lee y guarda todos los dígitos hasta que se encuentra un espacio o un punto. En el primer caso, la función almacena que se trata de un Entero y devuelve la categoría correspondiente. En el segundo caso, la función comprueba que existe como mínimo un dígito después del punto, para almacenar que se trata de un Real; o devuelve un error. (Listing 4) 
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[language=Python, caption=Detección de números]
+		elif ch.isdigit():
+		num = ""
+		num+=ch
+		ch=self.flujo.siguiente()
+		while(ch.isdigit()):
+			num+=ch
+			ch=self.flujo.siguiente()
+		if (ch != '.'):
+			self.flujo.devuelve(ch)
+			return componentes.Numero(num, self.nlinea, 'ENTERO')
+		else:
+			newCh = self.flujo.siguiente()
+			if not (newCh.isdigit()):
+				self.flujo.devuelve(newCh)
+				self.flujo.devuelve(ch)
+				print "ERROR: NUMERO REAL MAL ESPECIFICADO" # tenemos un comentario no abierto
+				return self.Analiza()
+			num+=ch
+			num+=newCh
+			ch=self.flujo.siguiente()
+			while((ch).isdigit()):
+				num+=ch
+				ch=self.flujo.siguiente()
+			self.flujo.devuelve(ch)
+			return componentes.Numero(num, self.nlinea, 'REAL')
+	\end{lstlisting}
+\end{minipage}
+
+
+Por último, los caracteres no visibles como los saltos de línea o retornos de carro se tratan con su correspondiente codificación numérica, al no tener otra herramienta para tratarlos (Listing 5). Cualquier otro caracter no nulo hace que la función devuelva un error, mientras que al encontrar el primer caracter nulo se considera que se ha llegado al fin de fichero y se devuelve el componente correspondiente (Listing 6).
+
+\begin{lstlisting}[language=Python, caption=Caracteres no visibles]
+	elif (ch is not '' and ord(ch) == 13):
+    	self.nlinea += 1
+    	return self.Analiza()
+	elif (ch is not '' and ord(ch) == 10):
+    	return self.Analiza()
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption=Errores y fin de fichero]
+	elif len(ch) is not 0:
+    	print "ERROR: CARACTER NO DEFINIDO EN LA ESPECIFICACION DEL LENGUAJE"
+    	return self.Analiza()
+	else:
+    	return componentes.EOF()
+\end{lstlisting}
+
+\subsection{Analizador semántico}
+Para la construcción del analizador semántico, no disponíamos de un esqueleto de código, pero si de unas instrucciones básicas en el material de clase de teoría. A partir de éstas, pudimos deducir la estructura del analizador semántico. En primer lugar, se han creado dos funciones que nos ayudarán con las comprobaciones. La primera es una función \lstinline[language=Python]{avanza()} que nos devuelve el siguiente componente en nuestro programa, extraido del analizador léxico explicado en la sección anterior. La segunda función, \lstinline[language=Python]{comprueba()}, nos realiza la comprobación de que un componente pertenece a una determinada categoría léxica, o devuelve un error. 
+
+La aproximación que se ha tomado a la hora de programar el analizador semántico es la creación de una función por cada no terminal. En estas funciones, se van comprobando uno a uno los elementos que deberían aparecer, según la especificación sintáctica proporcionada en el material de la práctica. 
+
+El primer paso es comprobar que el primer elemento leído pertenece a los primeros de la regla, que ya se han sacado y explicado anteriormente. Así, podemos detectar a qué regla ha entrado nuestro programa. Gracias a la función \lstinline[language=Python]{comprueba()} definida anteriormente, se van comprobando todos los terminales que deberían aparecer. En caso de que el elemento siguiente sea un no terminal, se llama a la función de dicho no terminal. Si la regla de producción es una regla vacía, no se hace nada en ese paso. Se puede observar como se ha hecho la implementación del no terminal $\nt{resto\_term}$ (Listings 7)
+\begin{align*}
+	\regla{resto\_term}{\textbf{opmult} \ \nt{factor} \nt{resto\_exsimple}}
+	\regla{resto\_term}{\textbf{O} \ \nt{factor} \nt{resto\_exsimple}}
+	\regla{resto\_term}{\lambda}
+\end{align*}
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[language=Python, caption=analizaRestoTerm()]
+		def analizaRestoTerm(self):
+			if self.componente.cat == "OpMult":
+				self.avanza()
+				self.analizaFactor()
+				self.analizaRestoTerm()
+			elif self.componente.cat == "PR" and self.componente.valor == "Y":
+				self.avanza()
+				self.analizaFactor()
+				self.analizaRestoTerm()
+			elif (self.componente.cat == "PR" and self.componente.valor in ["ENTONCES", "HACER", "SINO", "O"]) or self.componente.cat == "ParentCi" or self.componente.cat == "CorCi" or self.componente.cat == "OpRel" or self.componente.cat == "PtoComa" or self.componente.cat == "OpAdd":
+				pass
+			else: 
+				print "Error: SE ESPERABA Resto de Termino en linea " + str(self.lexico.nlinea)
+				while not ((self.componente.cat == "PR" and self.componente.valor in ["O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "OpAdd" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
+					self.avanza()
+				return
+	\end{lstlisting}
+\end{minipage}
+
+Para el tratamiento de errores, se ha optado por un tratamiento en modo pánico. Esto quiere decir que si el componente que encontramos no es el componente esperado, avanzamos y tiramos todos los componentes que vienen a continuación hasta llegar a uno de los siguientes del no terminal que ha dado el problema. A partir de ahí, podemos continuar el análisis de una manera normal, habiendo informado del problema. Ésto se observa muy bien en el código anterior (Listings 7), ya que la condición \lstinline[language=Python]{else} muestra un bucle que va avanzando en el analizador léxico sin hacer nada con los componentes mientras el elemento no pertenezca a los siguientes de $\nt{resto\_term}$. Además, en el momento que encuentre un error, el compilador avisa de la línea de error y del tipo de error encontrado, mostrándolo por pantalla.
 
 
 \end{document}
