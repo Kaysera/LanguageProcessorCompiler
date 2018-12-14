@@ -162,8 +162,22 @@ En este grupo consideramos los identificadores y las palabras reservadas, ya que
 \subsubsection{Números}
 Si el primer caracter que se lee es un dígito, la categoría léxica va a ser \textbf{Número}, ya que un identificador no puede comenzar por un dígito. La MDD lee en este caso, comprobando según la gramática especificada anteriormente si el número es Entero o Real.
 
-\subsection{Comprobación de la gramática (A rellenar)}
-
+\subsection{Comprobación de la gramática}
+A continuación explicaremos cómo la gramática con la que se ha trabajado es $LL(1)$. Tal y como se estudió en las clases de teoría, una gramática $LL(1)$ es una gramática que cumple las siguientes condiciones para cualquier par de reglas $A \rightarrow \alpha$ y $A \rightarrow \beta$:
+\begin{align*}
+	& primeros(\alpha) \cap primeros(\beta) = \emptyset \\
+	& \epsilon \in primeros(\alpha) \implies primeros(\alpha) \cap siguientes(A) = \emptyset\\
+\end{align*}
+\\
+Informalmente, esto implica que, en la tabla de símbolos, cada celda tiene como mucho una parte derecha: esto es, para cada combinación de no terminal a analizar y terminal en la entrada, sólo se puede avanzar siguiendo una sola regla. \\
+Así pues, considerando que el código es una implementación manual de la tabla de símbolos, se puede concluir que la gramática a analizar es $LL(1)$ ya que, para cada par (no-terminal, terminal), tan sólo se sigue aplicando una regla, sin excepciones. No obstante, la regla: \begin{align*}
+\regla{expresion}{\nt{expr\_simple} \ \textbf{oprel} \ \nt{expr\_simple} | \nt{expr\_simple}}
+\end{align*}
+presenta prefijos comunes, por lo que fue necesario dividirla para eliminar dicho problema: \begin{align*}
+\regla{expresion}{\nt{expr\_simple} \nt{expresion'}} \\
+\regla{expresion'}{\textbf{oprel} \ \nt{expr\_simple} \ | \lambda} \\
+\end{align*} \\
+Una vez hecho esto, la gramática resultante ya es $LL(1)$, tal y como se refleja en el código.
 
 \section{Detalles de implementación}
 A la hora de implementar el sistema, se nos proporcionó una serie de ficheros con el esqueleto del código que tendríamos que completar. Dicho esqueleto contenía parte del analizador léxico, además de una implementación anterior del Árbol de Sintaxis Abstracta que se realizó el año anterior, y que nos ha servido de orientación para realizar nuestra propia implementación. Los ficheros proporcionados son: 
@@ -261,10 +275,10 @@ Por último, los caracteres no visibles como los saltos de línea o retornos de 
     	return componentes.EOF()
 \end{lstlisting}
 
-\subsection{Analizador semántico}
-Para la construcción del analizador semántico, no disponíamos de un esqueleto de código, pero si de unas instrucciones básicas en el material de clase de teoría. A partir de éstas, pudimos deducir la estructura del analizador semántico. En primer lugar, se han creado dos funciones que nos ayudarán con las comprobaciones. La primera es una función \lstinline[language=Python]{avanza()} que nos devuelve el siguiente componente en nuestro programa, extraido del analizador léxico explicado en la sección anterior. La segunda función, \lstinline[language=Python]{comprueba()}, nos realiza la comprobación de que un componente pertenece a una determinada categoría léxica, o devuelve un error. 
+\subsection{Analizador sintáctico}
+Para la construcción del analizador sintáctico, no disponíamos de un esqueleto de código, pero si de unas instrucciones básicas en el material de clase de teoría. A partir de éstas, pudimos deducir la estructura del analizador sintáctico. En primer lugar, se han creado dos funciones que nos ayudarán con las comprobaciones. La primera es una función \lstinline[language=Python]{avanza()} que nos devuelve el siguiente componente en nuestro programa, extraido del analizador léxico explicado en la sección anterior. La segunda función, \lstinline[language=Python]{comprueba()}, nos realiza la comprobación de que un componente pertenece a una determinada categoría léxica, o devuelve un error. 
 
-La aproximación que se ha tomado a la hora de programar el analizador semántico es la creación de una función por cada no terminal. En estas funciones, se van comprobando uno a uno los elementos que deberían aparecer, según la especificación sintáctica proporcionada en el material de la práctica. 
+La aproximación que se ha tomado a la hora de programar el analizador sintáctico es la creación de una función por cada no terminal. En estas funciones, se van comprobando uno a uno los elementos que deberían aparecer, según la especificación sintáctica proporcionada en el material de la práctica. 
 
 El primer paso es comprobar que el primer elemento leído pertenece a los primeros de la regla, que ya se han sacado y explicado anteriormente. Así, podemos detectar a qué regla ha entrado nuestro programa. Gracias a la función \lstinline[language=Python]{comprueba()} definida anteriormente, se van comprobando todos los terminales que deberían aparecer. En caso de que el elemento siguiente sea un no terminal, se llama a la función de dicho no terminal. Si la regla de producción es una regla vacía, no se hace nada en ese paso. Se puede observar como se ha hecho la implementación del no terminal $\nt{resto\_term}$ (Listings 7)
 \begin{align*}
@@ -296,5 +310,206 @@ El primer paso es comprobar que el primer elemento leído pertenece a los primer
 
 Para el tratamiento de errores, se ha optado por un tratamiento en modo pánico. Esto quiere decir que si el componente que encontramos no es el componente esperado, avanzamos y tiramos todos los componentes que vienen a continuación hasta llegar a uno de los siguientes del no terminal que ha dado el problema. A partir de ahí, podemos continuar el análisis de una manera normal, habiendo informado del problema. Ésto se observa muy bien en el código anterior (Listings 7), ya que la condición \lstinline[language=Python]{else} muestra un bucle que va avanzando en el analizador léxico sin hacer nada con los componentes mientras el elemento no pertenezca a los siguientes de $\nt{resto\_term}$. Además, en el momento que encuentre un error, el compilador avisa de la línea de error y del tipo de error encontrado, mostrándolo por pantalla.
 
+\subsection{Analizador semántico}
+Por último, para la construcción del analizador semántico, se ha aprovechado el código del analizador sintáctico, y se han intercalado las operaciones semánticas pertinentes. Aunque todo lo expuesto a continuación es parte del análisis semántico, dada la diferencia entre sus flujos de información, hemos considerado necesario dividir la explicación del análisis semántico en dos partes: \textbf{comprobaciones semánticas} y \textbf{tabla de símbolos}.
+
+\subsubsection{Tabla de símbolos}
+En primer lugar, nuestro código lee las declaraciones de variables al principio del programa, y con dicha información construye la tabla de símbolos. Dicha tabla se utiliza posteriormente por el resto del analizador semántico para rellenar la información de los nodos pertinentes.
+La tabla de símbolos ha sido implementada por medio de un diccionario en Python, de tal forma que pueda ser indexada por el nombre de cada variable, y así se pueda acceder a su información. Para su construcción, tanto las funciones \lstinline[language=Python]{analizaDeclVar} como \lstinline[language=Python]{analizaDeclV} recuperan la lista de variables declaradas en cada línea (Listings 8), y si están repetidas, devuelve un mensaje de error. Si no, añade la variable a la tabla de símbolos, y sigue con el análisis. Por su parte, la función \lstinline[language=Python]{analizaListaId} recupera el identificador de la primera variable, y lo añade a la lista que devuelve \lstinline[language=Python]{analizaRestoListaId} (Listings 9). Esta lista, a su vez, será una lista con los identificadores del resto de variables, o una lista vacía (para acabar con la recursión).
+
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[language=Python, caption=analizaDeclVar()]
+	def analizaDeclVar(self):
+        if self.componente.cat == "PR" and self.componente.valor == "VAR":
+            self.avanza()
+            listaIDs = self.analizaListaId()
+            self.comprueba("DosPtos")
+            tipo = self.analizaTipo()
+            self.comprueba("PtoComa")
+
+            # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
+            for identif in listaIDs:
+                if (identif in self.tablaSim):
+                    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
+                else:
+                    self.tablaSim[identif] = tipo
+
+            self.analizaDeclV()
+        elif self.componente.cat == "PR" and self.componente.valor =="INICIO" :
+            pass
+        else:
+            print "Error: SE ESPERABA PR VAR O INICIO en linea " + str(self.lexico.nlinea)
+            while not (self.componente.cat == "PR" and self.componente.valor == "INICIO"):
+                self.avanza()
+            return
+	\end{lstlisting}
+\end{minipage}
+\newpage
+\begin{minipage}{\linewidth}
+
+	\begin{lstlisting}[language=Python, caption=analizaListaId() y analizaRestoListaId()]
+	def analizaListaId(self):
+        if self.componente.cat == "Identif":
+            identif = self.componente.valor
+            self.avanza()
+            restoIds = self.analizaRestoListaId()
+            restoIds.append(identif)
+            return (restoIds)
+        else:
+            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
+            while not (self.componente.cat == "PtoComa"):
+                self.avanza()
+            return
+    
+    def analizaRestoListaId(self):
+        if self.componente.cat == "Coma":
+            self.avanza()
+            restoIDs = self.analizaListaId()
+            return restoIDs
+        elif self.componente.cat == "DosPtos":
+            return []
+        else:
+            print "Error: SE ESPERABA COMA O DOS PUNTOS en linea " + str(self.lexico.nlinea)
+            while not (self.componente.cat == "PtoComa"):
+                self.avanza()
+            return
+     \end{lstlisting}
+\end{minipage}
+
+Una vez construida la tabla de símbolos, otros métodos hacen uso de la misma para comprobar que las variables están declaradas antes de usarlas (Listings 10 y 11), o para comprobar que son de un tipo concreto (Listings 12).
+
+\begin{minipage}{\linewidth}
+
+\begin{lstlisting}[language=Python, caption=analizaInstSimple()]
+	def analizaInstSimple(self):
+        if self.componente.cat == "Identif":
+		    # RESTRICCION SEMANTICA: definir variables antes de usarlas
+            if (self.componente.valor not in self.tablaSim):
+                print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
+            accVar = AST.NodoAccesoVariable(self.componente.valor, self.lexico.nlinea, self.tablaSim[self.componente.valor])
+            self.avanza()
+            expr = self.analizaRestoInstSimple()
+            nodoAsignacion = AST.NodoAsignacion(accVar, expr, self.lexico.nlinea)
+            return nodoAsignacion
+        else: 
+            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
+            while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
+                    self.avanza()
+            return
+    \end{lstlisting}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+    \begin{lstlisting}[language=Python, caption=analizaVariable()]          
+    def analizaVariable(self):
+        if self.componente.cat == "Identif":
+            # RESTRICCION SEMANTICA: definir variables antes de usarlas
+            if (self.componente.valor not in self.tablaSim):
+                print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
+
+            var = self.componente.valor
+            tipo = self.tablaSim[var]
+            self.avanza()
+            dcha = self.analizaRestoVar()
+    
+            if (dcha is None):
+                return AST.NodoAccesoVariable(var, self.lexico.nlinea, tipo)
+
+            else:
+                return AST.NodoAccesoVector(var, dcha, self.lexico.nlinea)
+        else:
+            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
+            while not ((self.componente.cat == "PR" and self.componente.valor in ["Y","O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "OpAdd" or self.componente.cat == "OpMult" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
+                    self.avanza()
+            return
+	\end{lstlisting}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+    \begin{lstlisting}[language=Python, caption=analizaInstES()]          
+    def analizaInstES(self):
+        if self.componente.cat == "PR" and self.componente.valor == "LEE":
+            self.avanza()
+            self.comprueba("ParentAp")
+            # RESTRICCION SEMANTICA: el argumento de LEE solo puede ser entero o real
+            if (self.tablaSim[self.componente.valor] not in ["ENTERO", "REAL"]):
+                print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
+
+            nodoLee = AST.NodoLee(self.componente.valor, self.lexico.nlinea)
+            self.comprueba("Identif")
+            self.comprueba("ParentCi")
+            return nodoLee
+        elif self.componente.cat == "PR" and self.componente.valor == "ESCRIBE":
+            self.avanza()
+            self.comprueba("ParentAp")
+            expr = self.analizaExprSimple()
+            self.comprueba("ParentCi")
+            nodoEscribe = AST.NodoEscribe(expr, self.lexico.nlinea)
+            return nodoEscribe
+        else: 
+            print "Error: SE ESPERABA LEE O ESCRIBE en linea " + str(self.lexico.nlinea)
+            while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
+                    self.avanza()
+            return
+	\end{lstlisting}
+\end{minipage}
+
+\subsubsection{Comprobaciones semánticas}
+Para llevar a cabo tanto las comprobaciones semánticas habituales como la construcción del AST, se ha aprovechado la estructura de un fichero de Python ya existente creado anteriormente por el profesor: \lstinline[language=Python]{AST.py}, y se ha adaptado para las necesidades concretas de nuestro lenguaje, dando lugar al fichero \lstinline[language=Python]{ASTree.py}. Este fichero recoge los distintos tipos de nodos que puede haber en el AST, y por cada nodo recoge la línea de código asociada, y sus atributos e hijos pertinentes. Además, cada nodo tiene métodos tanto para realizar sus comprobaciones semánticas y las de sus hijos como para mostrar información suya en forma de texto. Un ejemplo de nodo de dicho fichero se puede ver en (Listings 13).
+
+Básicamente, las comprobaciones semánticas que se realizan son las indicadas en la descripción de la práctica, en concreto:
+\begin{itemize}
+	\item No se pueden definir dos variables con el mismo nombre.
+	\item Las variables se deben definir antes de usarlas.
+	\item No puede haber identificadores que coincidan con las palabras reservadas del lenguaje (esto ya lo impide el analizador léxico).
+	\item Conversión implícita de enteros en reales. Esto se hace dentro de las clases NodoAsignación, NodoAritmética y NodoComparación.
+	\item No hay conversión implícita con el tipo booleano (se controla igual que antes).
+	\item NodoLee solo acepta leer enteros y reales. Esto se comprueba dentro de NodoLee.
+	\item NodoEscribe solo acepta expresiones. Esto ya está restringido por la sintaxis.
+\end{itemize} 
+
+Para implementar el AST, hemos elegido representarlo como una lista dentro del analizador sintáctico. La función de análisis \lstinline[language=Python]{analizaListaInst()} es la encargada de ir insertando nuevos nodos en dicha lista, uno por cada instrucción que lee. Dicha lista es luego retornada a \lstinline[language=Python]{analizaInstrucciones()}, la cual usa el valor de retorno para construir el AST. Los tipos de instrucciones (y, por ende, de nodos) que acepta la primera función son los indicados en la descripción de la práctica, es decir: asignaciones, condicionales, bucles, lectura, escritura y sentencias compuestas. Para este último, crea como hijo una lista de sentencias. Para asignaciones, condicionales, bucles y nodos de escritura, puede darse el caso de que necesite analizar una expresión. En ese caso, creará los nodos de expresión que sean necesarios, los cuales pueden ser: operación aritmética, comparación; valor entero, real o booleano; acceso a variable o acceso a vector.
+
+\begin{minipage}{\linewidth}
+    \begin{lstlisting}[language=Python, caption=NodoAritmetico(AST)]          
+class NodoAritmetico(AST):
+	def __init__(self, izq, dcha, linea, op):
+		self.izq = izq
+		self.dcha = dcha
+		self.linea = linea
+		self.op = op
+		self.tipo = None
+		self.compsem()
+	
+	def compsem(self):
+		self.izq.compsem()
+		self.dcha.compsem()
+		if self.izq is not None:
+			if self.izq.tipo == "ENTERO":
+				if self.dcha.tipo == "BOOLEANO":
+					print "Error: el tipo ENTERO es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
+				elif self.dcha.tipo == "REAL":
+					self.tipo = "REAL"
+				else:
+					self.tipo = "ENTERO"
+
+			if self.izq.tipo == "REAL":
+				if self.dcha.tipo == "BOOLEANO":
+					print "Error: el tipo real es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
+				else:
+					self.tipo = "REAL"
+		
+			if self.izq.tipo == "BOOLEANO":
+				if self.dcha.tipo is not "BOOLEANO":
+					print "Error: El tipo booleano es incompatible con tipos no booleanos (error semantico en linea " + str(self.linea) + ")"
+				else:
+					self.tipo = "BOOLEANO"
+		else:
+			self.tipo = self.dcha.tipo
+
+	def arbol(self):
+		return '( "Aritmetica" "op: %s" "tipo: %s" "linea: %s" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
+	\end{lstlisting}
+\end{minipage}
 
 \end{document}
