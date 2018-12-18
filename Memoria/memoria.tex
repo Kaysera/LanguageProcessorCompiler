@@ -169,7 +169,64 @@ A continuación explicaremos cómo la gramática con la que se ha trabajado es $
 	& \epsilon \in primeros(\alpha) \implies primeros(\alpha) \cap siguientes(A) = \emptyset\\
 \end{align*}
 \\
-Informalmente, esto implica que, en la tabla de símbolos, cada celda tiene como mucho una parte derecha: esto es, para cada combinación de no terminal a analizar y terminal en la entrada, sólo se puede avanzar siguiendo una sola regla. \\
+Informalmente, esto implica que, en la tabla de símbolos, cada celda tiene como mucho una parte derecha: esto es, para cada combinación de no terminal a analizar y terminal en la entrada, sólo se puede avanzar siguiendo una sola regla. Para poder calcular la tabla de símbolos, antes es necesario calcular los \textbf{primeros} de cada regla y los \textbf{siguientes} de cada no terminal:\\
+
+\begin{tabular}{|c|c|}
+	\hline
+	\textbf{No terminales} & \textbf{Primeros} \\ \hline
+	Programa & \{PROGRAMA\} \\ \hline
+	decl\_var & \{VAR\} \\ \hline
+	decl\_v & \{id\} \\ \hline
+	lista\_id & \{id\} \\ \hline
+	resto\_listaid & \{,\} \\ \hline
+	Tipo & \{ENTERO,REAL,BOOLEANO\},\{VECTOR\} \\ \hline
+	Tipo\_std & \{ENTERO\},\{REAL\},\{BOOLEANO\} \\ \hline
+	instrucciones & \{INICIO\} \\ \hline
+	lista\_inst & \{INICIO,id,LEE,ESCRIBE,SI,MIENTRAS\} \\ \hline
+	instrucción & \{INICIO\},\{id\},\{LEE, ESCRIBE\},\{SI\},\{MIENTRAS\} \\ \hline
+	Inst\_simple & \{id\} \\ \hline
+	resto\_instsimple & \{opasigna\},\{[\} \\ \hline
+	variable & \{id\} \\ \hline
+	resto\_var & \{[\} \\ \hline
+	inst\_e/s & \{LEE\},\{ESCRIBE\} \\ \hline
+	expresión & \{id,num,(,NO,CIERTO,FALSO,+,-\} \\ \hline
+	expresión' & \{oprel\} \\ \hline
+	expr\_simple & \{id,num,(,NO,CIERTO,FALSO\},\{+,-\} \\ \hline
+	resto\_exsimple & \{opsuma\},\{O\} \\ \hline
+	termino & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
+	resto\_term & \{opmult\},\{Y\} \\ \hline
+	factor & \{id\},\{num\},\{(\},\{NO\},\{CIERTO\},\{FALSO\} \\ \hline
+	signo & \{+\},\{-\} \\ \hline
+\end{tabular}
+
+\begin{tabular}{|c|c|}
+	\hline
+	\textbf{No terminales} & \textbf{Siguientes} \\ \hline
+	Programa & \{\$\} \\ \hline
+	decl\_var & \{INICIO\} \\ \hline
+	decl\_v & \{INICIO\} \\ \hline
+	lista\_id & \{:\} \\ \hline
+	resto\_listaid & \{:\} \\ \hline
+	Tipo & \{;\} \\ \hline
+	Tipo\_std & \{;\} \\ \hline
+	instrucciones & \{.\} \\ \hline
+	lista\_inst & \{FIN\} \\ \hline
+	instrucción & \{;,SINO\} \\ \hline
+	Inst\_simple & \{;,SINO\} \\ \hline
+	resto\_instsimple & \{;,SINO\} \\ \hline
+	variable & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	resto\_var & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	inst\_e/s & \{;,SINO\} \\ \hline
+	expresión & \{ENTONCES,HACER,;,SINO\} \\ \hline
+	expresión' & \{ENTONCES,HACER,;,SINO\} \\ \hline
+	expr\_simple & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	resto\_exsimple & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	termino & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	resto\_term & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	factor & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	signo & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
+\end{tabular}
+\newpage
 Así pues, considerando que el código es una implementación manual de la tabla de símbolos, se puede concluir que la gramática a analizar es $LL(1)$ ya que, para cada par (no-terminal, terminal), tan sólo se sigue aplicando una regla, sin excepciones. No obstante, la regla: \begin{align*}
 \regla{expresion}{\nt{expr\_simple} \ \textbf{oprel} \ \nt{expr\_simple} | \nt{expr\_simple}}
 \end{align*}
@@ -321,11 +378,7 @@ La tabla de símbolos ha sido implementada por medio de un diccionario en Python
 	\begin{lstlisting}[language=Python, caption=analizaDeclVar()]
 	def analizaDeclVar(self):
         if self.componente.cat == "PR" and self.componente.valor == "VAR":
-            self.avanza()
-            listaIDs = self.analizaListaId()
-            self.comprueba("DosPtos")
-            tipo = self.analizaTipo()
-            self.comprueba("PtoComa")
+            # ...
 
             # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
             for identif in listaIDs:
@@ -335,16 +388,10 @@ La tabla de símbolos ha sido implementada por medio de un diccionario en Python
                     self.tablaSim[identif] = tipo
 
             self.analizaDeclV()
-        elif self.componente.cat == "PR" and self.componente.valor =="INICIO" :
-            pass
-        else:
-            print "Error: SE ESPERABA PR VAR O INICIO en linea " + str(self.lexico.nlinea)
-            while not (self.componente.cat == "PR" and self.componente.valor == "INICIO"):
-                self.avanza()
-            return
+        # ...
 	\end{lstlisting}
 \end{minipage}
-\newpage
+
 \begin{minipage}{\linewidth}
 
 	\begin{lstlisting}[language=Python, caption=analizaListaId() y analizaRestoListaId()]
@@ -355,11 +402,8 @@ La tabla de símbolos ha sido implementada por medio de un diccionario en Python
             restoIds = self.analizaRestoListaId()
             restoIds.append(identif)
             return (restoIds)
-        else:
-            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
-            while not (self.componente.cat == "PtoComa"):
-                self.avanza()
-            return
+        
+        # ...
     
     def analizaRestoListaId(self):
         if self.componente.cat == "Coma":
@@ -368,66 +412,30 @@ La tabla de símbolos ha sido implementada por medio de un diccionario en Python
             return restoIDs
         elif self.componente.cat == "DosPtos":
             return []
-        else:
-            print "Error: SE ESPERABA COMA O DOS PUNTOS en linea " + str(self.lexico.nlinea)
-            while not (self.componente.cat == "PtoComa"):
-                self.avanza()
-            return
+       
+       # ...
      \end{lstlisting}
 \end{minipage}
+\newpage
 
-Una vez construida la tabla de símbolos, otros métodos hacen uso de la misma para comprobar que las variables están declaradas antes de usarlas (Listings 10 y 11), o para comprobar que son de un tipo concreto (Listings 12).
+Una vez construida la tabla de símbolos, otros métodos hacen uso de la misma para comprobar que las variables están declaradas antes de usarlas (Listings 10), o para comprobar que son de un tipo concreto (Listings 11).
 
 \begin{minipage}{\linewidth}
 
 \begin{lstlisting}[language=Python, caption=analizaInstSimple()]
-	def analizaInstSimple(self):
         if self.componente.cat == "Identif":
 		    # RESTRICCION SEMANTICA: definir variables antes de usarlas
             if (self.componente.valor not in self.tablaSim):
                 print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
             accVar = AST.NodoAccesoVariable(self.componente.valor, self.lexico.nlinea, self.tablaSim[self.componente.valor])
             self.avanza()
-            expr = self.analizaRestoInstSimple()
-            nodoAsignacion = AST.NodoAsignacion(accVar, expr, self.lexico.nlinea)
-            return nodoAsignacion
-        else: 
-            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
-            while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
-                    self.avanza()
-            return
+            
+            # ...
     \end{lstlisting}
 \end{minipage}
 
 \begin{minipage}{\linewidth}
-    \begin{lstlisting}[language=Python, caption=analizaVariable()]          
-    def analizaVariable(self):
-        if self.componente.cat == "Identif":
-            # RESTRICCION SEMANTICA: definir variables antes de usarlas
-            if (self.componente.valor not in self.tablaSim):
-                print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
-
-            var = self.componente.valor
-            tipo = self.tablaSim[var]
-            self.avanza()
-            dcha = self.analizaRestoVar()
-    
-            if (dcha is None):
-                return AST.NodoAccesoVariable(var, self.lexico.nlinea, tipo)
-
-            else:
-                return AST.NodoAccesoVector(var, dcha, self.lexico.nlinea)
-        else:
-            print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
-            while not ((self.componente.cat == "PR" and self.componente.valor in ["Y","O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "OpAdd" or self.componente.cat == "OpMult" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
-                    self.avanza()
-            return
-	\end{lstlisting}
-\end{minipage}
-
-\begin{minipage}{\linewidth}
     \begin{lstlisting}[language=Python, caption=analizaInstES()]          
-    def analizaInstES(self):
         if self.componente.cat == "PR" and self.componente.valor == "LEE":
             self.avanza()
             self.comprueba("ParentAp")
@@ -436,26 +444,13 @@ Una vez construida la tabla de símbolos, otros métodos hacen uso de la misma p
                 print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
 
             nodoLee = AST.NodoLee(self.componente.valor, self.lexico.nlinea)
-            self.comprueba("Identif")
-            self.comprueba("ParentCi")
-            return nodoLee
-        elif self.componente.cat == "PR" and self.componente.valor == "ESCRIBE":
-            self.avanza()
-            self.comprueba("ParentAp")
-            expr = self.analizaExprSimple()
-            self.comprueba("ParentCi")
-            nodoEscribe = AST.NodoEscribe(expr, self.lexico.nlinea)
-            return nodoEscribe
-        else: 
-            print "Error: SE ESPERABA LEE O ESCRIBE en linea " + str(self.lexico.nlinea)
-            while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
-                    self.avanza()
-            return
+			# ...            
+            
 	\end{lstlisting}
 \end{minipage}
 
 \subsubsection{Comprobaciones semánticas}
-Para llevar a cabo tanto las comprobaciones semánticas habituales como la construcción del AST, se ha aprovechado la estructura de un fichero de Python ya existente creado anteriormente por el profesor: \lstinline[language=Python]{AST.py}, y se ha adaptado para las necesidades concretas de nuestro lenguaje, dando lugar al fichero \lstinline[language=Python]{ASTree.py}. Este fichero recoge los distintos tipos de nodos que puede haber en el AST, y por cada nodo recoge la línea de código asociada, y sus atributos e hijos pertinentes. Además, cada nodo tiene métodos tanto para realizar sus comprobaciones semánticas y las de sus hijos como para mostrar información suya en forma de texto. Un ejemplo de nodo de dicho fichero se puede ver en (Listings 13).
+Para llevar a cabo tanto las comprobaciones semánticas habituales como la construcción del AST, se ha aprovechado la estructura de un fichero de Python ya existente creado anteriormente por el profesor: \lstinline[language=Python]{AST.py}, y se ha adaptado para las necesidades concretas de nuestro lenguaje, dando lugar al fichero \lstinline[language=Python]{ASTree.py}. Este fichero recoge los distintos tipos de nodos que puede haber en el AST, y por cada nodo recoge la línea de código asociada, y sus atributos e hijos pertinentes. Además, cada nodo tiene métodos tanto para realizar sus comprobaciones semánticas y las de sus hijos como para mostrar información suya en forma de texto. Un ejemplo de nodo de dicho fichero se puede ver en (Listings 12).
 
 Básicamente, las comprobaciones semánticas que se realizan son las indicadas en la descripción de la práctica, en concreto:
 \begin{itemize}
@@ -474,41 +469,13 @@ Para implementar el AST, hemos elegido representarlo como una lista dentro del a
     \begin{lstlisting}[language=Python, caption=NodoAritmetico(AST)]          
 class NodoAritmetico(AST):
 	def __init__(self, izq, dcha, linea, op):
-		self.izq = izq
-		self.dcha = dcha
-		self.linea = linea
-		self.op = op
-		self.tipo = None
-		self.compsem()
+		# Aquí se inicializan los atributos e hijos del nodo, y se llama a compsem()
 	
 	def compsem(self):
-		self.izq.compsem()
-		self.dcha.compsem()
-		if self.izq is not None:
-			if self.izq.tipo == "ENTERO":
-				if self.dcha.tipo == "BOOLEANO":
-					print "Error: el tipo ENTERO es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
-				elif self.dcha.tipo == "REAL":
-					self.tipo = "REAL"
-				else:
-					self.tipo = "ENTERO"
-
-			if self.izq.tipo == "REAL":
-				if self.dcha.tipo == "BOOLEANO":
-					print "Error: el tipo real es incompatible con el tipo booleano (error semantico en linea " + str(self.linea) + ")"
-				else:
-					self.tipo = "REAL"
-		
-			if self.izq.tipo == "BOOLEANO":
-				if self.dcha.tipo is not "BOOLEANO":
-					print "Error: El tipo booleano es incompatible con tipos no booleanos (error semantico en linea " + str(self.linea) + ")"
-				else:
-					self.tipo = "BOOLEANO"
-		else:
-			self.tipo = self.dcha.tipo
+		# Aquí se hacen las comprobaciones semánticas propias y las de los hijos
 
 	def arbol(self):
-		return '( "Aritmetica" "op: %s" "tipo: %s" "linea: %s" \n %s\n %s\n)' % (self.op, self.tipo, self.linea, self.izq, self.dcha)
+		# Aquí se devuelve información del nodo y sus hijos en forma de string
 	\end{lstlisting}
 \end{minipage}
 
