@@ -174,57 +174,57 @@ Informalmente, esto implica que, en la tabla de símbolos, cada celda tiene como
 \begin{tabular}{|c|c|}
 	\hline
 	\textbf{No terminales} & \textbf{Primeros} \\ \hline
-	Programa & \{PROGRAMA\} \\ \hline
-	decl\_var & \{VAR\} \\ \hline
-	decl\_v & \{id\} \\ \hline
-	lista\_id & \{id\} \\ \hline
-	resto\_listaid & \{,\} \\ \hline
-	Tipo & \{ENTERO,REAL,BOOLEANO\},\{VECTOR\} \\ \hline
-	Tipo\_std & \{ENTERO\},\{REAL\},\{BOOLEANO\} \\ \hline
-	instrucciones & \{INICIO\} \\ \hline
-	lista\_inst & \{INICIO,id,LEE,ESCRIBE,SI,MIENTRAS\} \\ \hline
-	instrucción & \{INICIO\},\{id\},\{LEE, ESCRIBE\},\{SI\},\{MIENTRAS\} \\ \hline
-	Inst\_simple & \{id\} \\ \hline
-	resto\_instsimple & \{opasigna\},\{[\} \\ \hline
-	variable & \{id\} \\ \hline
-	resto\_var & \{[\} \\ \hline
-	inst\_e/s & \{LEE\},\{ESCRIBE\} \\ \hline
-	expresión & \{id,num,(,NO,CIERTO,FALSO,+,-\} \\ \hline
-	expresión' & \{oprel\} \\ \hline
-	expr\_simple & \{id,num,(,NO,CIERTO,FALSO\},\{+,-\} \\ \hline
-	resto\_exsimple & \{opsuma\},\{O\} \\ \hline
-	termino & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
-	resto\_term & \{opmult\},\{Y\} \\ \hline
-	factor & \{id\},\{num\},\{(\},\{NO\},\{CIERTO\},\{FALSO\} \\ \hline
-	signo & \{+\},\{-\} \\ \hline
+	$\nt{Programa}$ & \{PROGRAMA\} \\ \hline
+	$\nt{decl\_var}$ & \{VAR\} \\ \hline
+	$\nt{decl\_v}$ & \{id\} \\ \hline
+	$\nt{lista\_id}$ & \{id\} \\ \hline
+	$\nt{resto\_listaid}$ & \{,\} \\ \hline
+	$\nt{Tipo}$ & \{ENTERO,REAL,BOOLEANO\},\{VECTOR\} \\ \hline
+	$\nt{Tipo\_std}$ & \{ENTERO\},\{REAL\},\{BOOLEANO\} \\ \hline
+	$\nt{instrucciones}$ & \{INICIO\} \\ \hline
+	$\nt{lista\_inst}$ & \{INICIO,id,LEE,ESCRIBE,SI,MIENTRAS\} \\ \hline
+	$\nt{instrucción}$ & \{INICIO\},\{id\},\{LEE, ESCRIBE\},\{SI\},\{MIENTRAS\} \\ \hline
+	$\nt{Inst\_simple}$ & \{id\} \\ \hline
+	$\nt{resto\_instsimple}$ & \{opasigna\},\{[\} \\ \hline
+	$\nt{variable}$ & \{id\} \\ \hline
+	$\nt{resto\_var}$ & \{[\} \\ \hline
+	$\nt{inst\_e/s }$& \{LEE\},\{ESCRIBE\} \\ \hline
+	$\nt{expresión}$ & \{id,num,(,NO,CIERTO,FALSO,+,-\} \\ \hline
+	$\nt{expresión'}$ & \{oprel\} \\ \hline
+	$\nt{expr\_simple}$ & \{id,num,(,NO,CIERTO,FALSO\},\{+,-\} \\ \hline
+	$\nt{resto\_exsimple}$ & \{opsuma\},\{O\} \\ \hline
+	$\nt{termino}$ & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
+	$\nt{resto\_term}$ & \{opmult\},\{Y\} \\ \hline
+	$\nt{factor}$ & \{id\},\{num\},\{(\},\{NO\},\{CIERTO\},\{FALSO\} \\ \hline
+	$\nt{signo}$ & \{+\},\{-\} \\ \hline
 \end{tabular}
 
 \begin{tabular}{|c|c|}
 	\hline
 	\textbf{No terminales} & \textbf{Siguientes} \\ \hline
-	Programa & \{\$\} \\ \hline
-	decl\_var & \{INICIO\} \\ \hline
-	decl\_v & \{INICIO\} \\ \hline
-	lista\_id & \{:\} \\ \hline
-	resto\_listaid & \{:\} \\ \hline
-	Tipo & \{;\} \\ \hline
-	Tipo\_std & \{;\} \\ \hline
-	instrucciones & \{.\} \\ \hline
-	lista\_inst & \{FIN\} \\ \hline
-	instrucción & \{;,SINO\} \\ \hline
-	Inst\_simple & \{;,SINO\} \\ \hline
-	resto\_instsimple & \{;,SINO\} \\ \hline
-	variable & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	resto\_var & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	inst\_e/s & \{;,SINO\} \\ \hline
-	expresión & \{ENTONCES,HACER,;,SINO\} \\ \hline
-	expresión' & \{ENTONCES,HACER,;,SINO\} \\ \hline
-	expr\_simple & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	resto\_exsimple & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	termino & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	resto\_term & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	factor & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
-	signo & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
+	$\nt{Programa}$ & \{\$\} \\ \hline
+	$\nt{decl\_var}$ & \{INICIO\} \\ \hline
+	$\nt{decl\_v }$& \{INICIO\} \\ \hline
+	$\nt{lista\_id}$ & \{:\} \\ \hline
+	$\nt{resto\_listaid}$ & \{:\} \\ \hline
+	$\nt{Tipo}$ & \{;\} \\ \hline
+	$\nt{Tipo\_std}$ & \{;\} \\ \hline
+	$\nt{instrucciones}$ & \{.\} \\ \hline
+	$\nt{lista\_inst}$ & \{FIN\} \\ \hline
+	$\nt{instrucción}$ & \{;,SINO\} \\ \hline
+	$\nt{Inst\_simple}$ & \{;,SINO\} \\ \hline
+	$\nt{resto\_instsimple}$ & \{;,SINO\} \\ \hline
+	$\nt{variable}$ & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{resto\_var}$ & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{inst\_e/s}$ & \{;,SINO\} \\ \hline
+	$\nt{expresión}$ & \{ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{expresión'}$ & \{ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{expr\_simple}$ & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{resto\_exsimple}$ & \{],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{termino}$ & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{resto\_term}$ & \{opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{factor}$ & \{opmult,Y,opsuma,O,],),oprel,ENTONCES,HACER,;,SINO\} \\ \hline
+	$\nt{signo}$ & \{id,num,(,NO,CIERTO,FALSO\} \\ \hline
 \end{tabular}
 \newpage
 Así pues, considerando que el código es una implementación manual de la tabla de símbolos, se puede concluir que la gramática a analizar es $LL(1)$ ya que, para cada par (no-terminal, terminal), tan sólo se sigue aplicando una regla, sin excepciones. No obstante, la regla: \begin{align*}
@@ -479,4 +479,10 @@ class NodoAritmetico(AST):
 	\end{lstlisting}
 \end{minipage}
 
+\section{Conclusiones}
+A lo largo de esta práctica se ha trabajado con Python para resolver los problemas típicos que se pueden encontrar a la hora de implementar un compilador, lo que nos ha permitido evitar los problemas típicos del desconocimiento de un lenguaje. Si bien otras opciones como puede ser Haskell resultan más apropiadas al generar un compilador real, por su eficiencia y otros factores, la dificultad de comprensión de algunos elementos necesarios como las mónadas hacen que la manera en que se ha desarrollado la práctica sea la más conveniente dado el temario de la asignatura. 
+
+Se ha podido implementar un compilador partiendo con apenas algunas herramientas que más que eliminar dificultad aceleran el proceso de construcción, ya que la herramienta \lstinline[language=Python]{flujo.py} no tiene una gran dificultad pero hubiera requerido un tiempo que ha sido valioso para otras implementaciones. 
+
+Desde la gramática y especificaciones del lenguaje, se ha conseguido generar todos los pasos necesarios hasta crear el Árbol de Sintaxis Abstracta. La generación de código es un paso que, si bien no se ha tenido en cuenta en esta práctica, se puede realizar sin mayor problema una vez llegados a este punto. Por ello, la práctica ha resultado lo suficientemente completa, al permitirnos ver los problemas reales de los distintos análisis de un programa; sin llegar a ser extremadamente larga o compleja y no permitirnos comprender los conceptos de una manera adecuada.
 \end{document}
