@@ -50,12 +50,12 @@ class Anasint:
             tipo = self.analizaTipo()
             self.comprueba("PtoComa")
 
-	    # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
-	    for identif in listaIDs:
-		if (identif in self.tablaSim):
-		    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
-		else:
-		    self.tablaSim[identif] = tipo
+            # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
+            for identif in listaIDs:
+                if (identif in self.tablaSim):
+                    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
+                else:
+                    self.tablaSim[identif] = tipo
 
             self.analizaDeclV()
         elif self.componente.cat == "PR" and self.componente.valor =="INICIO" :
@@ -73,12 +73,12 @@ class Anasint:
             tipo = self.analizaTipo()
             self.comprueba("PtoComa")
 
-	    # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
-	    for identif in listaIDs:
-		if (identif in self.tablaSim):
-		    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
-		else:
-		    self.tablaSim[identif] = tipo
+            # RESTRICCION SEMANTICA: No puede haber identificadores repetidos
+            for identif in listaIDs:
+                if (identif in self.tablaSim):
+                    print "Error: no puede haber identificadores repetidos. ID repetido: " + str(identif)
+                else:
+                    self.tablaSim[identif] = tipo
 
             self.analizaDeclV()
         elif self.componente.cat == "PR" and self.componente.valor == "INICIO":
@@ -106,7 +106,7 @@ class Anasint:
         if self.componente.cat == "Coma":
             self.avanza()
             restoIDs = self.analizaListaId()
-	    return restoIDs
+            return restoIDs
         elif self.componente.cat == "DosPtos":
             return []
         else:
@@ -118,21 +118,21 @@ class Anasint:
     def analizaTipo(self):
         if self.componente.cat =="PR"and self.componente.valor in ["ENTERO", "REAL", "BOOLEANO"]:
             tipo = self.analizaTipoStd()
-	    return tipo
+            return tipo
         elif self.componente.cat == "PR" and self.componente.valor == "VECTOR":
             self.avanza()
             self.comprueba("CorAp")
             self.comprueba("Numero")
             self.comprueba("CorCi")
-	    if self.componente.cat == "PR" and self.componente.valor == "DE":
+            if self.componente.cat == "PR" and self.componente.valor == "DE":
                 self.avanza()
             else:
                 print "Error: SE ESPERABA DE en linea " + str(self.lexico.nlinea)
                 while not (self.componente.cat == "PtoComa"):
-			self.avanza()
-		return
+                    self.avanza()
+                return
             self.analizaTipoStd()
-	    return "VECTOR"
+            return "VECTOR"
         else:
             print "Error: SE ESPERABA TIPO O VECTOR en linea " + str(self.lexico.nlinea)
             while not (self.componente.cat == "PtoComa"):
@@ -141,9 +141,9 @@ class Anasint:
     
     def analizaTipoStd(self):
         if self.componente.cat =="PR"and self.componente.valor in ["ENTERO", "REAL", "BOOLEANO"]:
-	    tipo = self.componente.valor
+            tipo = self.componente.valor
             self.avanza()
-	    return tipo
+            return tipo
         else:
             print "Error: TIPO INCORRECTO"
             while not (self.componente.cat == "PtoComa"):
@@ -236,7 +236,7 @@ class Anasint:
 
     def analizaInstSimple(self):
         if self.componente.cat == "Identif":
-	    # RESTRICCION SEMANTICA: definir variables antes de usarlas
+	        # RESTRICCION SEMANTICA: definir variables antes de usarlas
             if (self.componente.valor not in self.tablaSim):
                 print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
             accVar = AST.NodoAccesoVariable(self.componente.valor, self.lexico.nlinea, self.tablaSim[self.componente.valor])
@@ -270,20 +270,20 @@ class Anasint:
     
     def analizaVariable(self):
         if self.componente.cat == "Identif":
-	    # RESTRICCION SEMANTICA: definir variables antes de usarlas
-	    if (self.componente.valor not in self.tablaSim):
-	        print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
+            # RESTRICCION SEMANTICA: definir variables antes de usarlas
+            if (self.componente.valor not in self.tablaSim):
+                print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
 
-	    var = self.componente.valor
-	    tipo = self.tablaSim[var]
+            var = self.componente.valor
+            tipo = self.tablaSim[var]
             self.avanza()
             dcha = self.analizaRestoVar()
 	
-	    if (dcha is None):
-		return AST.NodoAccesoVariable(var, self.lexico.nlinea, tipo)
+            if (dcha is None):
+                return AST.NodoAccesoVariable(var, self.lexico.nlinea, tipo)
 
-	    else:
-		return AST.NodoAccesoVector(var, dcha, self.lexico.nlinea)
+            else:
+                return AST.NodoAccesoVector(var, dcha, self.lexico.nlinea)
         else:
             print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor in ["Y","O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpRel" or self.componente.cat == "OpAdd" or self.componente.cat == "OpMult" or self.componente.cat == "CorCi" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa"):
@@ -295,7 +295,7 @@ class Anasint:
             self.avanza()
             expr = self.analizaExprSimple()
             self.comprueba("CorCi")
-	    return expr
+            return expr
         elif (self.componente.cat =="PR"and self.componente.valor in ["Y", "O", "ENTONCES", "HACER", "SINO"]) or self.componente.cat == "OpMult" or self.componente.cat == "OpAdd" or self.componente.cat == "OpRel" or self.componente.cat == "ParentCi" or self.componente.cat == "PtoComa" or self.componente.cat == "CorCi":
             return None
         else: 
