@@ -238,10 +238,11 @@ class NodoAccesoVariable(AST):
 		return '( "AccesoVariable" "v: %s" "linea: %s" )' % (self.var, self.linea)
 
 class NodoAccesoVector(AST):
-	def __init__(self, vect, exp, linea):
+	def __init__(self, vect, exp, linea, tipo):
 		self.vect = vect
 		self.exp = exp
 		self.linea = linea
+		self.tipoVar = tipo
 		self.compsem()
 
 	def compsem(self):
@@ -250,10 +251,10 @@ class NodoAccesoVector(AST):
 		if self.exp.tipo is not "ENTERO":
 			print "Error: No se puede indexar un vector con un tipo no ENTERO (error semantico en linea " + str(self.linea) + ")"
 
-		if self.vect.tipo is not "VECTOR":
+		if self.tipoVar is not "VECTOR":
 			print "Error: no se puede indexar un tipo no vectorial (error semantico en linea " + str(self.linea) + ")"
 
-		self.tipo = self.vect.tipo
+		self.tipo = self.tipoVar
 
 	def arbol(self):
 		return '( "AccesoVector" "tipo: %s" "linea: %s" %s\n %s\n)' % (self.tipo, self.linea, self.vect, self.exp)

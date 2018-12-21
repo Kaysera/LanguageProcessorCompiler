@@ -26,7 +26,7 @@ class Anasint:
         if self.componente.cat == cat:
             self.avanza()
         else: 
-            print "Error: se esperaba " + cat
+            print "Error: se esperaba " + cat + " en linea " + str(self.lexico.nlinea)
     
     def analizaPrograma(self):
         if self.componente.cat == "PR" and self.componente.valor == "PROGRAMA":
@@ -239,27 +239,30 @@ class Anasint:
 	        # RESTRICCION SEMANTICA: definir variables antes de usarlas
             if (self.componente.valor not in self.tablaSim):
                 print "Error: variable no definida: '" + self.componente.valor + "' en linea " + str(self.componente.linea)
-            accVar = AST.NodoAccesoVariable(self.componente.valor, self.lexico.nlinea, self.tablaSim[self.componente.valor])
+            
+            var = self.componente
             self.avanza()
-            expr = self.analizaRestoInstSimple()
-            nodoAsignacion = AST.NodoAsignacion(accVar, expr, self.lexico.nlinea)
-            return nodoAsignacion
+            return self.analizaRestoInstSimple(var)
         else: 
             print "Error: SE ESPERABA IDENTIFICADOR en linea " + str(self.lexico.nlinea)
             while not ((self.componente.cat == "PR" and self.componente.valor == "SINO") or self.componente.cat == "PtoComa"):
                     self.avanza()
             return
     
-    def analizaRestoInstSimple(self):
+    def analizaRestoInstSimple(self, var):
         if self.componente.cat == "OpAsigna":
             self.avanza()
-            return self.analizaExpresion()
+            accVar = AST.NodoAccesoVariable(var.valor, self.lexico.nlinea, self.tablaSim[var.valor])
+            expr = self.analizaExpresion()
+            return AST.NodoAsignacion(accVar, expr, self.lexico.nlinea)
         elif self.componente.cat == "CorAp":
             self.avanza()
-            self.analizaExprSimple()
+            exprVect = self.analizaExprSimple()
             self.comprueba("CorCi")
             self.comprueba("OpAsigna")
-            return self.analizaExpresion()
+            expr = self.analizaExpresion()
+            nodoVect = AST.NodoAccesoVector(var.valor, exprVect, self.lexico.nlinea, self.tablaSim[var.valor])
+            return AST.NodoAsignacion(nodoVect, expr, self.lexico.nlinea)
         elif (self.componente.cat =="PR"and self.componente.valor in ["SINO"]) or self.componente.cat == "PtoComa":
             pass
         else:
