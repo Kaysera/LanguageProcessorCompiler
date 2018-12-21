@@ -39,8 +39,8 @@ class Analex:
  def Analiza(self): 
   ch=self.flujo.siguiente()
   #print('Caracter: ' + ch)
-  if ch==" ":
-    while ch == " ":
+  if ch==" " or ch == '\t':
+    while ch == " " or ch == '\t':
       ch = self.flujo.siguiente()
     self.flujo.devuelve(ch)
     return self.Analiza()
