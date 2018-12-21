@@ -314,8 +314,10 @@ class Anasint:
 	        # RESTRICCION SEMANTICA: el argumento de LEE solo puede ser entero o real
             if (self.tablaSim[self.componente.valor] not in ["ENTERO", "REAL"]):
                 print "Error: el tipo a leer solo puede ser entero o real (instruccion LEE en linea " + str(self.componente.linea) + ")"
-
-            nodoLee = AST.NodoLee(self.componente.valor, self.lexico.nlinea)
+            var = self.componente.valor
+            tipo = self.tablaSim[var]	
+            nodoVar = AST.NodoAccesoVariable(var, self.lexico.nlinea, tipo)
+            nodoLee = AST.NodoLee(nodoVar, self.lexico.nlinea)
             self.comprueba("Identif")
             self.comprueba("ParentCi")
             return nodoLee

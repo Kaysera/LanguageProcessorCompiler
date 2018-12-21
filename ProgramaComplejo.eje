@@ -1,0 +1,20 @@
+PROGRAMA p1;
+VAR i,x:ENTERO;
+a,b:REAL;
+c,d:BOOLEANO;
+h : VECTOR[5] DE ENTERO;
+INICIO
+  i := 0;
+   MIENTRAS (i<>5) HACER
+    INICIO 
+      x:=i*4;
+      ESCRIBE(x);
+    FIN;
+    SI (i<=7) ENTONCES
+      INICIO
+        a := 3.2 + 2;
+        c := CIERTO;
+      FIN
+    SINO
+      c := FALSO;
+FIN.

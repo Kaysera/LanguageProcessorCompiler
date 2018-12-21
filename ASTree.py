@@ -75,6 +75,7 @@ class NodoLee(AST):
 		self.compsem()
 
 	def compsem(self):
+		self.var.compsem()
 		# La variable a leer solo puede ser entera o real
 		if (self.var.tipo == "BOOLEANO"):
 			print "Error: no se puede leer por teclado una variable booleana (error semantico en linea " + str(self.linea) + ")"
